@@ -13,7 +13,7 @@ class Template(models.Model):
     name = models.CharField(max_length=255)
     html_file = models.FileField(upload_to='templates')
     css_file = models.FileField(upload_to='templates')
-    preview_image = models.ImageField(upload_to='template_previews', null=True, blank=True)
+    # preview_image = models.ImageField(upload_to='template_previews', null=True, blank=True)
 
 class Resume(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
