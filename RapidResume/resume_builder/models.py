@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.utils import timezone
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -16,7 +15,7 @@ class Template(models.Model):
     # preview_image = models.ImageField(upload_to='template_previews', null=True, blank=True)
 
 class Resume(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE) # sessions, id, time
     title = models.CharField(max_length=255)
     template = models.ForeignKey(Template, on_delete=models.SET_NULL, null=True)
     creation_date = models.DateTimeField(auto_now_add=True)
@@ -39,7 +38,7 @@ class WorkExperience(models.Model):
     job_title = models.CharField(max_length=255)
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True) # makemigrations, migrate
 
 class Skill(models.Model):
     resume = models.ForeignKey(Resume, on_delete=models.CASCADE)
