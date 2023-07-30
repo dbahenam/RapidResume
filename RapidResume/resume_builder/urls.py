@@ -12,5 +12,6 @@ urlpatterns = [
     path("certification", views.CertificationView.as_view(), name="certifications"),
     path("project", views.ProjectView.as_view(), name="project"),
     path("language", views.LanguageView.as_view(), name="language"),
-    path("resume_preview", views.resume_preview, name="resume_preview")
+    path("resume_preview", views.resume_preview, name="resume_preview"),
+    path("new-resume", views.new_resume, name="new_resume")
 ]

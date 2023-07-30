@@ -3,6 +3,12 @@ from django.core.validators import RegexValidator
 
 from . import models
 
+class PersonalDetailsForm(forms.ModelForm):
+
+    class Meta:
+        model = models.PersonalDetails
+        exclude = ['resume']
+
 class EducationForm(forms.ModelForm):
 
     school_name = forms.CharField(

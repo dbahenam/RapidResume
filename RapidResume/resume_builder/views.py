@@ -1,9 +1,8 @@
-from calendar import c
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic.base import View, TemplateView
 from django.views.generic.edit import FormView
 
-from . forms import EducationForm, WorkExperienceForm, SkillForm, CertificationForm, ProjectForm, LanguageForm
+from . forms import EducationForm, WorkExperienceForm, SkillForm, CertificationForm, ProjectForm, LanguageForm, PersonalDetailsForm
 from .utils import date_to_datestr, datestr_to_date
 
 # Create your views here.
@@ -16,6 +15,42 @@ def builder(request):
 
 def resume_preview(request):
     return render(request, "resume_builder/resume_preview.html")
+
+def new_resume(request):
+    # if user is not logged in, option to login
+    # "log in to save previous resume progress or"
+    # "replace and start over"
+    if request.user.is_authenticated:
+        # Do something for authenticated users.
+        # save resume, create model
+        return render(request, 'authenticated_template.html')
+    else:
+        # Clear session
+        request.session.clear()
+        return redirect('/education')
+
+
+class UserProfileView(FormView):
+    # Required / Handles GET
+    form_class = PersonalDetailsForm
+    template_name = 'resume_builder/user_profile.html'
+
+    # Retrieve data in session if it exists
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        skill_data = self.request.session.get('skill_data', None)
+        kwargs['initial'] = skill_data
+        return kwargs
+
+    # Required / Handles POST
+    success_url = 'certification'
+    def form_valid(self, form):
+        skill_data = form.cleaned_data
+        self.request.session['skill_data'] = skill_data
+        return super().form_valid(form)
+
+
+
 
 class EducationView(View):
     
