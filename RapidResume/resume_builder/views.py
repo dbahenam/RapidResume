@@ -1,49 +1,172 @@
+from calendar import c
 from django.shortcuts import render, redirect, get_object_or_404
-from . forms import EducationForm, WorkExperienceForm, SkillsForm
+from django.views.generic.base import View, TemplateView
+from django.views.generic.edit import FormView
+
+from . forms import EducationForm, WorkExperienceForm, SkillForm, CertificationForm, ProjectForm, LanguageForm
+from .utils import date_to_datestr, datestr_to_date
 
 # Create your views here.
 
-def home(req):
-    return render(req, "resume_builder/home.html")
+def home(request):
+    return render(request, "resume_builder/home.html")
 
-def builder(req):
-    return render(req, "resume_builder/builder.html")
+def builder(request):
+    return render(request, "resume_builder/builder.html")
 
-def education(req):
-    if req.method == "POST":
+def resume_preview(request):
+    return render(request, "resume_builder/resume_preview.html")
+
+class EducationView(View):
+    
+    def get(self, req):
+        # Retrieve the data from the session if it exists
+        education_data = req.session.get('education_data', None)
+        if education_data:
+            # Convert date strings back to date objects
+            education_data['start_date'] = datestr_to_date(education_data['start_date'])
+            if education_data['end_date']:
+                education_data['end_date'] = datestr_to_date(education_data['end_date'])
+        form = EducationForm(initial=education_data)
+        return render(req, 'resume_builder/education.html', {
+            'form' : form
+        })
+    
+    def post(self, req):
         form = EducationForm(req.POST)
         if form.is_valid():
-            #form.save()
-            return redirect('work-experience')
-    else:
-        form = EducationForm()
-    return render(req, "resume_builder/education.html", {
-        "form" : form
-    })
+            education_data = form.cleaned_data
+            # Convert date objects to strings
+            education_data['start_date'] = date_to_datestr(education_data['start_date'])
+            if education_data['end_date'] != None:
+                education_data['end_date'] = date_to_datestr(education_data['end_date'])
+            req.session['education_data'] = education_data
+            return redirect("work-experience")
+        else:
+            return render(req, "resume_builder/education.html", {
+                "form" : form
+            })
 
-def work_experience(req):
-    if req.method == "POST":
-        form = WorkExperienceForm(req.POST)
-        if form.is_valid():
-            #form.save()
-            return redirect('skills')
-    else:
-        form = WorkExperienceForm()
-    return render(req, "resume_builder/work-experience.html", {
-        "form" : form
-    })
+class WorkExperienceView(FormView):
+    # Required / Handles GET
+    form_class = WorkExperienceForm
+    template_name = 'resume_builder/work-experience.html'
 
-def skills(req):
-    if req.method == "POST":
-        form = SkillsForm(req.POST)
-        if form.is_valid():
-            #form.save()
-            return redirect('certifications')
-    else:
-        form = SkillsForm()
-    return render(req, "resume_builder/skills.html", {
-        "form" : form
-    })
+    # Retrieve data in session if it exists
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        work_experience_data = self.request.session.get('work_experience_data', None)
+        if work_experience_data:
+            # Convert date strings back to date objects
+            work_experience_data['start_date'] = datestr_to_date(work_experience_data['start_date'])
+            if work_experience_data['end_date']:
+                work_experience_data['end_date'] = datestr_to_date(work_experience_data['end_date'])
+        kwargs['initial'] = work_experience_data
+        return kwargs
 
-def certifications(req):
-    pass
+    # Required / Handles POST
+    success_url = 'skill'
+    def form_valid(self, form):
+        work_experience_data = form.cleaned_data
+        # Convert date objects back to strings
+        work_experience_data['start_date'] = date_to_datestr(work_experience_data['start_date'])
+        if work_experience_data['end_date'] != None:
+            work_experience_data['end_date'] = date_to_datestr(work_experience_data['end_date'])
+        self.request.session['work_experience_data'] = work_experience_data
+        return super().form_valid(form)
+
+
+class SkillView(FormView):
+    # Required / Handles GET
+    form_class = SkillForm
+    template_name = 'resume_builder/skill.html'
+
+    # Retrieve data in session if it exists
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        skill_data = self.request.session.get('skill_data', None)
+        kwargs['initial'] = skill_data
+        return kwargs
+
+    # Required / Handles POST
+    success_url = 'certification'
+    def form_valid(self, form):
+        skill_data = form.cleaned_data
+        self.request.session['skill_data'] = skill_data
+        return super().form_valid(form)
+    
+
+class CertificationView(FormView):
+    # Required / Handles GET
+    form_class = CertificationForm
+    template_name = "resume_builder/certification.html"
+
+    # Retrieve data in session if it exists
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        certification_data = self.request.session.get('certification_data', None)
+        if certification_data:
+            # Convert date strings back to date objects
+            certification_data['date_issued'] = datestr_to_date(certification_data['date_issued'])
+            if certification_data['expiration_date']:
+                certification_data['expiration_date'] = datestr_to_date(certification_data['expiration_date'])
+        kwargs['initial'] = certification_data
+        return kwargs
+
+    # Required / Handles POST
+    success_url = 'project'
+    def form_valid(self, form):
+        certification_data = form.cleaned_data
+        certification_data['date_issued'] = date_to_datestr(certification_data['date_issued'])
+        if certification_data['expiration_date']:
+            certification_data['expiration_date'] = date_to_datestr(certification_data['expiration_date'])
+        self.request.session['certification_data'] = certification_data
+        return super().form_valid(form)
+
+class ProjectView(FormView):
+    # Required / Handles GET
+    form_class = ProjectForm
+    template_name = 'resume_builder/project.html'
+
+    # Retrieve data in session if it exists
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        project_data = self.request.session.get('project_data', None)
+        if project_data:
+            # Convert date strings back to date objects
+            project_data['start_date'] = datestr_to_date(project_data['start_date'])
+            if project_data['end_date']:
+                project_data['end_date'] = datestr_to_date(project_data['end_date'])
+        kwargs['initial'] = project_data
+        return kwargs
+    
+    # Required / Handles POST
+    success_url = 'language'
+    def form_valid(self, form):
+        project_data = form.cleaned_data
+        # Convert date objects to strings
+        project_data['start_date'] = date_to_datestr(project_data['start_date'])
+        if project_data['end_date']:
+            project_data['end_date'] = date_to_datestr(project_data['end_date'])
+        self.request.session['project_data'] = project_data
+        return super().form_valid(form)
+
+class LanguageView(FormView):
+    # Required / Handles GET
+    form_class = LanguageForm
+    template_name = 'resume_builder/language.html'
+
+    # Retrieve data in session if it exists
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        language_data = self.request.session.get('language_data', None)
+        kwargs['initial'] = language_data
+        return kwargs
+    
+    # Required / Handles POST
+    success_url = 'resume_preview'
+    def form_valid(self, form):
+        language_data = form.cleaned_data
+        self.request.session['language_data'] = language_data
+        return super().form_valid(form)
+

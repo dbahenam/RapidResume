@@ -6,24 +6,39 @@ from . import models
 class EducationForm(forms.ModelForm):
 
     school_name = forms.CharField(
-        label="School Name", min_length=3, max_length=255,
-        validators=[RegexValidator(r'^[a-zA-ZÀ-ÿ\s]*$',
-        message="Only letters are allowed!")],
-        widget=forms.TextInput(attrs={"placeholder": "School Name"}),
+        label='School Name',
+        max_length=255,
+        min_length=2,
+        validators=[
+            RegexValidator(r'^[a-zA-Z\s]*$', 'Only letters are allowed.'),
+        ],
+        error_messages={
+            'required': 'School name is required.',
+        },
+        widget=forms.TextInput(attrs={'placeholder': 'University of California San Diego'})
     )
 
     degree = forms.CharField(
-        label="Degree", min_length=3, max_length=255,
-        validators=[RegexValidator(r'^[a-zA-ZÀ-ÿ\s]*$',
-        message="Only letters are allowed!")],
-        widget=forms.TextInput(attrs={"placeholder": "B.S Computer Science"}),
+        label='Degree',
+        max_length=255,
+        min_length=2,
+        validators=[
+            RegexValidator(r'^[a-zA-Z\s\.]*$', 'Only letters, spaces and periods are allowed.'),
+        ],
+        error_messages={
+            'required': 'Degree is required.',
+        },
+        widget=forms.TextInput(attrs={'placeholder': 'Electrical Engineering'})
     )
 
-    start_date = forms.CharField(
-        label="Start Date", min_length=3, max_length=255,
-        validators=[RegexValidator(r'^[a-zA-ZÀ-ÿ\s]*$',
-        message="Only letters are allowed!")],
-        widget=forms.TextInput(attrs={"placeholder": "01-07-1960"}),
+    start_date = forms.DateField(
+        label='Start Date',
+        input_formats=['%Y-%m-%d'],
+        error_messages={
+            'required': 'Start date is required.',
+            'invalid': 'Invalid date. Expected format (YYYY-MM-DD).',
+        },
+        widget=forms.DateInput(attrs={'placeholder': 'YYYY-MM-DD'})
     )
     
     gpa = forms.FloatField(
@@ -42,8 +57,26 @@ class WorkExperienceForm(forms.ModelForm):
         model = models.WorkExperience
         exclude = ["resume"]
 
-class SkillsForm(forms.ModelForm):
+class SkillForm(forms.ModelForm):
 
     class Meta:
         model = models.Skill
+        exclude = ["resume"]
+
+class CertificationForm(forms.ModelForm):
+
+    class Meta:
+        model = models.Certification
+        exclude = ["resume"]
+
+class ProjectForm(forms.ModelForm):
+
+    class Meta:
+        model = models.Project
+        exclude = ["resume"]
+
+class LanguageForm(forms.ModelForm):
+
+    class Meta:
+        model = models.Language
         exclude = ["resume"]
