@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="container mt-3 mb-3" style="width:80%">
+    <h1 class="text-center mt-1">Skills</h1>
+    <form action="" method="POST" class="card p-3 mt-5" autocomplete="off" novalidate>
+        {% csrf_token %}
+        {{ form|crispy}}
+
+        <h1>BUTTON + JS to inject html</h1>
+
+        <div class="row">
+            <a href="work-experience" type="button" class="btn btn-outline-secondary m-3" style="width:5rem; font-weight:bold">Back</a>
+            <button type="submit" class="btn  btn-outline-success m-3" style="width:5rem; font-weight:bold">Next</button>
+        </div>
+          
+    </form>
+</div>
+{% endblock content %}

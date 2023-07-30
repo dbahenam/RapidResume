@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="container mt-3 mb-3" style="width:80%">
+    <h1 class="text-center mt-1">Project</h1>
+    <form action="" method="POST" class="card p-3 mt-5" autocomplete="off" novalidate>
+        {% csrf_token %}
+        {{form.name|as_crispy_field}} 
+        <div class="row">
+            <div class="col-6"> {{form.start_date|as_crispy_field}} </div>
+            <div class="col-6 "> {{form.end_date|as_crispy_field}} </div>
+        </div> 
+        {{form.description|as_crispy_field}} 
+        {{form.project_url|as_crispy_field}}
+        <div class="row">
+            <a href="certification" type="button" class="btn btn-outline-secondary m-3" style="width:5rem; font-weight:bold">Back</a>
+            <button type="submit" class="btn  btn-outline-success m-3" style="width:5rem; font-weight:bold">Next</button>
+        </div>   
+    </form>
+</div>
+{% endblock content %}
+
