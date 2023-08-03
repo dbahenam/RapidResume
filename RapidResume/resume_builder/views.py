@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic.base import View, TemplateView
+from django.utils.decorators import method_decorator
+from django.views.generic.base import View
 from django.views.generic.edit import FormView
 
-from . forms import EducationForm, WorkExperienceForm, SkillForm, CertificationForm, ProjectForm, LanguageForm, PersonalDetailsForm
+from . import forms
+from .decorators import check_end_status
 from .utils import date_to_datestr, datestr_to_date
 
 # Create your views here.
@@ -14,6 +16,7 @@ def builder(request):
     return render(request, "resume_builder/builder.html")
 
 def resume_preview(request):
+    request.session['end_status'] = True
     return render(request, "resume_builder/resume_preview.html")
 
 def new_resume(request):
@@ -27,64 +30,72 @@ def new_resume(request):
     else:
         # Clear session
         request.session.clear()
-        return redirect('/education')
+        return redirect('/personal_detail')
+
+# Base FormView
+@method_decorator(check_end_status, name='dispatch')
+class BaseFormView(FormView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['end_status'] = self.request.session.get('end_status', False)
+        return context
 
 
-class UserProfileView(FormView):
+class PersonalDetailView(BaseFormView):
     # Required / Handles GET
-    form_class = PersonalDetailsForm
-    template_name = 'resume_builder/user_profile.html'
+    form_class = forms.PersonalDetailsForm
+    template_name = 'resume_builder/personal_detail.html'
 
     # Retrieve data in session if it exists
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        skill_data = self.request.session.get('skill_data', None)
-        kwargs['initial'] = skill_data
+        personal_detail_data = self.request.session.get('personal_detail_data', None)
+        kwargs['initial'] = personal_detail_data
         return kwargs
 
     # Required / Handles POST
-    success_url = 'certification'
+    success_url = 'education'
     def form_valid(self, form):
-        skill_data = form.cleaned_data
-        self.request.session['skill_data'] = skill_data
+        personal_detail_data = form.cleaned_data
+        self.request.session['personal_detail_data'] = personal_detail_data
         return super().form_valid(form)
 
-
-
-
+@method_decorator(check_end_status, name='dispatch')
 class EducationView(View):
     
-    def get(self, req):
+    def get(self, request):
         # Retrieve the data from the session if it exists
-        education_data = req.session.get('education_data', None)
+        education_data = request.session.get('education_data', None)
         if education_data:
             # Convert date strings back to date objects
             education_data['start_date'] = datestr_to_date(education_data['start_date'])
             if education_data['end_date']:
                 education_data['end_date'] = datestr_to_date(education_data['end_date'])
-        form = EducationForm(initial=education_data)
-        return render(req, 'resume_builder/education.html', {
-            'form' : form
+        form = forms.EducationForm(initial=education_data)
+        return render(request, 'resume_builder/education.html', {
+            'form' : form,
+            'end_status' : request.end_status
         })
     
-    def post(self, req):
-        form = EducationForm(req.POST)
+    def post(self, request):
+        form = forms.EducationForm(request.POST)
         if form.is_valid():
             education_data = form.cleaned_data
             # Convert date objects to strings
             education_data['start_date'] = date_to_datestr(education_data['start_date'])
             if education_data['end_date'] != None:
                 education_data['end_date'] = date_to_datestr(education_data['end_date'])
-            req.session['education_data'] = education_data
+            request.session['education_data'] = education_data
             return redirect("work-experience")
         else:
-            return render(req, "resume_builder/education.html", {
-                "form" : form
+            return render(request, "resume_builder/education.html", {
+                "form" : form,
+                'end_status' : request.end_status
             })
 
-class WorkExperienceView(FormView):
+class WorkExperienceView(BaseFormView):
     # Required / Handles GET
-    form_class = WorkExperienceForm
+    form_class = forms.WorkExperienceForm
     template_name = 'resume_builder/work-experience.html'
 
     # Retrieve data in session if it exists
@@ -110,10 +121,9 @@ class WorkExperienceView(FormView):
         self.request.session['work_experience_data'] = work_experience_data
         return super().form_valid(form)
 
-
-class SkillView(FormView):
+class SkillView(BaseFormView):
     # Required / Handles GET
-    form_class = SkillForm
+    form_class = forms.SkillForm
     template_name = 'resume_builder/skill.html'
 
     # Retrieve data in session if it exists
@@ -130,10 +140,9 @@ class SkillView(FormView):
         self.request.session['skill_data'] = skill_data
         return super().form_valid(form)
     
-
-class CertificationView(FormView):
+class CertificationView(BaseFormView):
     # Required / Handles GET
-    form_class = CertificationForm
+    form_class = forms.CertificationForm
     template_name = "resume_builder/certification.html"
 
     # Retrieve data in session if it exists
@@ -158,9 +167,9 @@ class CertificationView(FormView):
         self.request.session['certification_data'] = certification_data
         return super().form_valid(form)
 
-class ProjectView(FormView):
+class ProjectView(BaseFormView):
     # Required / Handles GET
-    form_class = ProjectForm
+    form_class = forms.ProjectForm
     template_name = 'resume_builder/project.html'
 
     # Retrieve data in session if it exists
@@ -186,9 +195,9 @@ class ProjectView(FormView):
         self.request.session['project_data'] = project_data
         return super().form_valid(form)
 
-class LanguageView(FormView):
+class LanguageView(BaseFormView):
     # Required / Handles GET
-    form_class = LanguageForm
+    form_class = forms.LanguageForm
     template_name = 'resume_builder/language.html'
 
     # Retrieve data in session if it exists

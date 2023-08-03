@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% block title %}Languages{% endblock title %}
 {% load crispy_forms_tags %}
 {% block content %}
 <div class="container mt-3 mb-3" style="width:80%">
@@ -6,9 +7,16 @@
     <form action="" method="POST" class="card p-3 mt-5" autocomplete="off" novalidate>
         {% csrf_token %}
         {{ form|crispy}}
-        <div class="row">
-            <a href="project" type="button" class="btn btn-outline-secondary m-3" style="width:5rem; font-weight:bold">Back</a>
-            <button type="submit" class="btn  btn-outline-success m-3" style="width:5rem; font-weight:bold">Next</button>
+        <div class="d-flex justify-content-between flex-wrap">
+            <div>
+                <a href="builder" type="button" class="btn btn-outline-secondary m-3" style="width:auto; font-weight:bold">Back</a>
+                <button type="submit" class="btn btn-outline-success m-3" style="width:auto; font-weight:bold">Next</button>
+            </div>
+            {% if end_status %}
+            <div>
+                <a href="resume_preview" type="button" class="btn btn-outline-warning m-3" style="width:auto; font-weight:bold">Review</a>
+            </div>
+            {% endif %}
         </div>
     </form>
 </div>
