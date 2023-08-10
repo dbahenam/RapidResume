@@ -2,22 +2,63 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.generic.base import View
 from django.views.generic.edit import FormView
+from django.views.decorators.clickjacking import xframe_options_exempt
+from django.conf import settings
+from django.http import JsonResponse
 
 from . import forms
+from . import models
 from .decorators import check_end_status
 from .utils import date_to_datestr, datestr_to_date
 
+import os, openai, json
 # Create your views here.
 
 def home(request):
     return render(request, "resume_builder/home.html")
 
 def builder(request):
-    return render(request, "resume_builder/builder.html")
+    template_names = ['template1', 'template2']  # update this list with the names of your templates
+    template_contents = {}
+    for template_name in template_names:
+        file_path = os.path.join(settings.BASE_DIR, 'media', 'templates', f'{template_name}_preview.html')
+        with open(file_path, 'r') as file:
+            template_contents[template_name] = file.read()
+    return render(request, 'resume_builder/builder.html', {'template_contents': template_contents})
+
+def set_template(request):
+    if request.method == 'POST':
+        template_name = request.POST.get('template_name')
+        request.session['template_name'] = template_name
+        return JsonResponse({'status':'success'}, safe=False)
+    else:
+        return JsonResponse({'status':'fail'}, safe=False)
 
 def resume_preview(request):
     request.session['end_status'] = True
     return render(request, "resume_builder/resume_preview.html")
+
+def generate_description(request):
+    if request.method == 'POST':
+        user_input = json.loads(request.body)
+        prompt = f"""
+        Write a brief description for a {user_input['project_type']} project that uses the following technologies {user_input['technologies']}
+        """
+        # Openai
+        openai.api_key = os.environ["OPENAI_API_KEY"]
+        response = openai.ChatCompletion.create(
+            model='gpt-3.5-turbo',
+            messages=[
+                {'role': 'system', 'content': 'You are a helpful assistant!'},
+                {'role': 'user', 'content': prompt}
+            ]
+        )
+        generated_description = response.choices[0].message.content.strip()
+        return JsonResponse({'description': generated_description})
+
+
+def start_resume_build(request):
+    pass
 
 def new_resume(request):
     # if user is not logged in, option to login

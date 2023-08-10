@@ -14,5 +14,8 @@ urlpatterns = [
     path("project", views.ProjectView.as_view(), name="project"),
     path("language", views.LanguageView.as_view(), name="language"),
     path("resume_preview", views.resume_preview, name="resume_preview"),
-    path("new-resume", views.new_resume, name="new_resume")
+    path("start-build", views.start_resume_build, name="load_resume"),
+    path("new-resume", views.new_resume, name="new_resume"),
+    path('set_template/', views.set_template, name='set_template'),
+    path('generate_description_endpoint', views.generate_description, name="get_auto_description")
 ]

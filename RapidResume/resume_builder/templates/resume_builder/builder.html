@@ -1,8 +1,38 @@
 {% extends 'base.html' %}
 {% block title %}Resume Builder{% endblock title %}
 {% block content %}
-<h1 class='text-center mt-3'>Choose a Template!</h1>
+<h1 class='text-center mt-3' >Choose a Template!</h1>
 <p class='text-center'>Only <a href="/personal_detail">Template</a>!</p>
-<p class='text-center'>Start building a <a href="/new-resume">new resume</a></p>
-
+<div class="d-flex">
+    {% for template_name, template_content in template_contents.items %}
+    <div class="template-section my-2 mx-auto" id="{{ template_name }}-preview" class="template-preview" data-template-name="{{ template_name }}" >
+        <div class="single-template-item">
+            {{ template_content|safe }}
+        </div> 
+    </div>
+{% endfor %}
+</div>
+<h1 class='text-center'>Start building a <a href="/new-resume">new resume</a></h1>
 {% endblock content %}
+
+{% block js %}
+<script>
+$(document).ready(function() {
+    $('.template-preview').click(function() {
+        var templateName = $(this).data('template-name');
+        // Now make an AJAX request to Django view to save this template name in the session
+        $.ajax({
+            type: 'POST',
+            url: '/set_template/',
+            data: {
+                'template_name': templateName,
+                'csrfmiddlewaretoken': '{{ csrf_token }}',
+            },
+            success: function(){
+                window.location.href = "/personal_detail";  // Redirect to the form filling page
+            }
+        });
+    });
+});
+</script>
+{% endblock js %}

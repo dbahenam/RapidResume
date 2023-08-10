@@ -11,20 +11,84 @@
             <div class="col-6"> {{form.start_date|as_crispy_field}} </div>
             <div class="col-6 "> {{form.end_date|as_crispy_field}} </div>
         </div> 
-        {{form.description|as_crispy_field}} 
-        {{form.project_url|as_crispy_field}}
+        <div>
+            {{ form.description|as_crispy_field }}
+            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#descriptionGeneratorModal">
+                Generate Description with AI
+            </button>
+        </div>
         <div class="d-flex justify-content-between flex-wrap">
             <div>
-                <a href="builder" type="button" class="btn btn-outline-secondary m-3" style="width:auto; font-weight:bold">Back</a>
-                <button type="submit" class="btn btn-outline-success m-3" style="width:auto; font-weight:bold">Next</button>
+                <a href="builder" type="button" class="btn btn-outline-secondary mt-3 mr-2" style="width:auto; font-weight:bold">Back</a>
+                <button type="submit" class="btn btn-outline-success mt-3" style="width:auto; font-weight:bold">Next</button>
             </div>
             {% if end_status %}
             <div>
-                <a href="resume_preview" type="button" class="btn btn-outline-warning m-3" style="width:auto; font-weight:bold">Review</a>
+                <a href="resume_preview" type="button" class="btn btn-outline-warning mt-3" style="width:auto; font-weight:bold">Review</a>
             </div>
             {% endif %}
         </div> 
     </form>
+    <!-- Modal -->
+    <div class="modal fade" id="descriptionGeneratorModal" tabindex="-1" role="dialog" aria-labelledby="descriptionGeneratorModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="descriptionGeneratorModalLabel">Generate Description with AI</h5>
+            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body">
+            <!-- Your structured input fields go here, e.g.: -->
+            <label>Project Type:</label>
+            <input type="text" id="projectType" class="form-control">
+            <label>Technologies Used:</label>
+            <input type="text" id="technologiesUsed" class="form-control">
+            <!-- Add more fields as needed -->
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" id="generateDescription" class="btn btn-primary">Generate</button>
+            </div>
+        </div>
+        </div>
+    </div>
 </div>
+
 {% endblock content %}
 
+{% block js %}
+<script>
+    document.getElementById('generateDescription').addEventListener('click', function() {
+        // Get the values from the modal's input fields
+        var projectType = document.getElementById('projectType').value;
+        var technologiesUsed = document.getElementById('technologiesUsed').value;
+        var descriptionField = document.querySelector('[name="description"]');
+        
+        // TODO: Send an AJAX request to your backend with these values, get the generated description, and populate your form's description field.
+        fetch('/generate_description_endpoint', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'project_type' : projectType,
+                'technologies' : technologiesUsed,
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            descriptionField.value = data.description; // Assuming the response has a "description" key.
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+
+        // Close the modal
+        var descriptionModal = document.getElementById('descriptionGeneratorModal');
+        descriptionModal.querySelector('.close').click();
+    });
+</script>
+{% endblock js %}
