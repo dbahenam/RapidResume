@@ -17,5 +17,5 @@ urlpatterns = [
     path("start-build", views.start_resume_build, name="load_resume"),
     path("new-resume", views.new_resume, name="new_resume"),
     path('set_template/', views.set_template, name='set_template'),
-    path('generate_description_endpoint', views.generate_description, name="get_auto_description")
+    path('generate_description_endpoint/<slug:form_slug>', views.generate_description, name="get_auto_description")
 ]

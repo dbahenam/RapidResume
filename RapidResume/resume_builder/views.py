@@ -10,6 +10,7 @@ from . import forms
 from . import models
 from .decorators import check_end_status
 from .utils import date_to_datestr, datestr_to_date
+from .constants import PROMPTS, CHATGPT_RESPONSE_LIMIT
 
 import os, openai, json
 # Create your views here.
@@ -38,24 +39,21 @@ def resume_preview(request):
     request.session['end_status'] = True
     return render(request, "resume_builder/resume_preview.html")
 
-def generate_description(request):
+def generate_description(request, form_slug):
     if request.method == 'POST':
         user_input = json.loads(request.body)
-        prompt = f"""
-        Write a brief description for a {user_input['project_type']} project that uses the following technologies {user_input['technologies']}
-        """
+        prompt = PROMPTS[form_slug].format(**user_input)
         # Openai
         openai.api_key = os.environ["OPENAI_API_KEY"]
         response = openai.ChatCompletion.create(
             model='gpt-3.5-turbo',
             messages=[
                 {'role': 'system', 'content': 'You are a helpful assistant!'},
-                {'role': 'user', 'content': prompt}
+                {'role': 'user', 'content': prompt + CHATGPT_RESPONSE_LIMIT}
             ]
         )
         generated_description = response.choices[0].message.content.strip()
         return JsonResponse({'description': generated_description})
-
 
 def start_resume_build(request):
     pass

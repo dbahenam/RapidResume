@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Education{% endblock title %}
 {% load crispy_forms_tags %}
 {% block content %}
@@ -20,18 +21,33 @@
             <div class="col-6"> {{form.start_date|as_crispy_field}} </div>
             <div class="col-6 "> {{form.end_date|as_crispy_field}} </div>
         </div> 
-        {{form.description|as_crispy_field}} 
+        <div>
+            {{ form.description|as_crispy_field }}
+            <button data-csrf="{{ csrf_token }}" id="descriptionButton" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#descriptionGeneratorModal">
+                Generate Description with AI
+            </button>
+        </div>
         <div class="d-flex justify-content-between flex-wrap">
             <div>
-                <a href="personal_detail" type="button" class="btn btn-outline-secondary m-3" style="width:auto; font-weight:bold">Back</a>
+                <a href="personal_detail" type="button" class="btn btn-outline-secondary" style="width:auto; font-weight:bold">Back</a>
                 <button type="submit" class="btn btn-outline-success m-3" style="width:auto; font-weight:bold">Next</button>
             </div>
             {% if end_status %}
             <div>
-                <a href="resume_preview" type="button" class="btn btn-outline-warning m-3" style="width:auto; font-weight:bold">Review</a>
+                <a href="resume_preview" type="button" class="btn btn-outline-warning" style="width:auto; font-weight:bold">Review</a>
             </div>
             {% endif %}
         </div>
     </form>
+    {% with first_label="Institution:" second_label="Major:" %}
+        {% include "includes/description_generator_modal.html" %}
+    {% endwith %}
 </div>
 {% endblock content %}
+
+{% block js %}
+<script>
+    var dataEndpointSlug = 'education';
+</script>
+<script src="{% static 'js/description_generator.js' %}"></script>
+{% endblock js %}

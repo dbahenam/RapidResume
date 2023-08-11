@@ -149,8 +149,6 @@ LOGOUT_REDIRECT_URL = "/home"
 
 SESSION_COOKIE_AGE = 7 * 24 * 60 * 60 # 1-week
 
-X_FRAME_OPTIONS = 'SAMEORIGIN' # or 'ALLOWALL'
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

@@ -1,3 +1,11 @@
+PROMPTS = {
+    'project' : 'Write a brief description for a {first_input} project that uses the following technologies {second_input}. ',
+    'education' : 'Describe an academic experience at {first_input} with a major in {second_input}. Mention any notable achievements related to the {second_input}. ',
+    'work-experience' : 'Describe the role of a {first_input} at {second_input}. Highlight their main responsibilities and the impact they might have had. ',
+}
+
+CHATGPT_RESPONSE_LIMIT = "Limit your response to 100 words or less."
+
 STATE_CHOICES = [
     ('AL', 'Alabama'),
     ('AK', 'Alaska'),
