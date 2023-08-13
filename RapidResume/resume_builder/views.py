@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.generic.base import View
 from django.views.generic.edit import FormView
-from django.views.decorators.clickjacking import xframe_options_exempt
 from django.conf import settings
 from django.http import JsonResponse
 
@@ -39,20 +38,59 @@ def resume_preview(request):
     request.session['end_status'] = True
     return render(request, "resume_builder/resume_preview.html")
 
+    # 'Generate a list of short sentences that describe the work experience from a job.'
+
 def generate_description(request, form_slug):
+    # function_descriptions = [
+    #     {
+    #         'name': 'get_job_description_list',
+    #         'description': 'Get job descriptions',
+    #         'parameters': {
+    #             'type': 'object',
+    #             'properties': {
+    #                 'job_title': {
+    #                     'type': 'string',
+    #                     'description': 'The position or job title, e.g. Software Engineer'
+    #                 },
+    #                 'company': {
+    #                     'type':'string',
+    #                     'description': 'The company the user works for, e.g. Google, e.g. Meta'
+    #                 },
+    #             },
+    #         },
+    #         'required': ['job_title', 'company']
+    #     },
+    # ]
+
+    # if request.method == 'POST':
+    #     user_input = json.loads(request.body)
+    #     prompt = PROMPTS[form_slug].format(**user_input)
+        
+    #     response = openai.ChatCompletion.create(
+    #         model ='gpt-3.5-turbo-0613',
+    #         messages =[{'role': 'user', 'content': prompt}],
+    #         functions = function_descriptions,
+    #         function_call = 'auto',
+    #     )
+
+    #     output = response
+    #     print(output)
+    # -----------------------------------------------------
     if request.method == 'POST':
         user_input = json.loads(request.body)
         prompt = PROMPTS[form_slug].format(**user_input)
         # Openai
         openai.api_key = os.environ["OPENAI_API_KEY"]
         response = openai.ChatCompletion.create(
-            model='gpt-3.5-turbo',
+            model='gpt-3.5-turbo-0613',
+            temperature = 0,
             messages=[
                 {'role': 'system', 'content': 'You are a helpful assistant!'},
                 {'role': 'user', 'content': prompt + CHATGPT_RESPONSE_LIMIT}
             ]
         )
         generated_description = response.choices[0].message.content.strip()
+        print(generated_description)
         return JsonResponse({'description': generated_description})
 
 def start_resume_build(request):
@@ -78,7 +116,6 @@ class BaseFormView(FormView):
         context = super().get_context_data(**kwargs)
         context['end_status'] = self.request.session.get('end_status', False)
         return context
-
 
 class PersonalDetailView(BaseFormView):
     # Required / Handles GET
