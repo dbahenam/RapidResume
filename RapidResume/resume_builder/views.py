@@ -38,27 +38,28 @@ def resume_preview(request):
     request.session['end_status'] = True
     return render(request, "resume_builder/resume_preview.html")
 
-    # 'Generate a list of short sentences that describe the work experience from a job.'
-
 def generate_description(request, form_slug):
     # function_descriptions = [
     #     {
     #         'name': 'get_job_description_list',
-    #         'description': 'Get job descriptions',
+    #         'description': 
+    #         '''
+    #             Generate a list of 5 job descriptions based on the job title and company provided. 
+    #         ''',
     #         'parameters': {
     #             'type': 'object',
     #             'properties': {
-    #                 'job_title': {
-    #                     'type': 'string',
-    #                     'description': 'The position or job title, e.g. Software Engineer'
-    #                 },
-    #                 'company': {
-    #                     'type':'string',
-    #                     'description': 'The company the user works for, e.g. Google, e.g. Meta'
-    #                 },
+    #                 'description': {
+    #                     'type': 'array',
+    #                     'items': {
+    #                         'type': 'string',
+    #                         'description': 'A job description string'
+    #                     },
+    #                     'description': 'List of job description strings based on a job title and company name'
+    #                 }
     #             },
     #         },
-    #         'required': ['job_title', 'company']
+    #         'required': ['description']
     #     },
     # ]
 
@@ -70,28 +71,24 @@ def generate_description(request, form_slug):
     #         model ='gpt-3.5-turbo-0613',
     #         messages =[{'role': 'user', 'content': prompt}],
     #         functions = function_descriptions,
-    #         function_call = 'auto',
+    #         function_call = {'name': 'get_job_description_list'},
     #     )
-
-    #     output = response
-    #     print(output)
-    # -----------------------------------------------------
-    if request.method == 'POST':
-        user_input = json.loads(request.body)
-        prompt = PROMPTS[form_slug].format(**user_input)
-        # Openai
-        openai.api_key = os.environ["OPENAI_API_KEY"]
-        response = openai.ChatCompletion.create(
-            model='gpt-3.5-turbo-0613',
-            temperature = 0,
-            messages=[
-                {'role': 'system', 'content': 'You are a helpful assistant!'},
-                {'role': 'user', 'content': prompt + CHATGPT_RESPONSE_LIMIT}
-            ]
-        )
-        generated_description = response.choices[0].message.content.strip()
-        print(generated_description)
-        return JsonResponse({'description': generated_description})
+    #     output = response.choices[0].message
+    #     cleaned_output = output.to_dict()['function_call']['arguments']
+        cleaned_output = """
+        {
+        "description": [
+            "Design, develop, and test software applications",
+            "Collaborate with cross-functional teams to define and implement software requirements",
+            "Debug and resolve software defects and issues",
+            "Optimize software performance and scalability",
+            "Conduct code reviews and provide feedback for continuous improvement"
+        ]
+        }
+        """
+        print(cleaned_output)
+        cleaned_output = json.loads(cleaned_output)
+        return JsonResponse(cleaned_output)
 
 def start_resume_build(request):
     pass
