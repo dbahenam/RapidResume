@@ -63,22 +63,27 @@ class WorkExperienceForm(forms.ModelForm):
         model = models.WorkExperience
         exclude = ["resume"]
 
+WorkExperienceFormSet = forms.modelformset_factory(models.WorkExperience, form=WorkExperienceForm, extra=1)
+
+class ProjectForm(forms.ModelForm):
+
+    class Meta:
+        model = models.Project
+        exclude = ["resume"]
+ProjectFormSet = forms.modelformset_factory(models.Project, form=ProjectForm, extra=1)
+
 class SkillForm(forms.ModelForm):
 
     class Meta:
         model = models.Skill
         exclude = ["resume"]
 
+SkillFormSet = forms.modelformset_factory(models.Skill, form=SkillForm, extra=1)
+
 class CertificationForm(forms.ModelForm):
 
     class Meta:
         model = models.Certification
-        exclude = ["resume"]
-
-class ProjectForm(forms.ModelForm):
-
-    class Meta:
-        model = models.Project
         exclude = ["resume"]
 
 class LanguageForm(forms.ModelForm):

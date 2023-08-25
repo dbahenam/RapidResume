@@ -52,6 +52,14 @@ class WorkExperience(models.Model):
     end_date = models.DateField(null=True, blank=True)
     description = models.TextField(null=True, blank=True) # makemigrations, migrate
 
+class Project(models.Model):
+    resume = models.ForeignKey(Resume, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)
+    description = models.TextField()
+    project_url = models.URLField(null=True, blank=True)
+
 class Skill(models.Model):
     resume = models.ForeignKey(Resume, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
@@ -64,14 +72,6 @@ class Certification(models.Model):
     date_issued = models.DateField()
     expiration_date = models.DateField(null=True, blank=True)
     cert_url = models.URLField(null=True, blank=True)
-
-class Project(models.Model):
-    resume = models.ForeignKey(Resume, on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
-    start_date = models.DateField()
-    end_date = models.DateField(null=True, blank=True)
-    description = models.TextField()
-    project_url = models.URLField(null=True, blank=True)
 
 class Language(models.Model):
     resume = models.ForeignKey(Resume, on_delete=models.CASCADE)

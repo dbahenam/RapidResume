@@ -1,3 +1,4 @@
+from tkinter import W
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.generic.base import View
@@ -9,10 +10,9 @@ from . import forms
 from . import models
 from .decorators import check_end_status
 from .utils import date_to_datestr, datestr_to_date
-from .constants import PROMPTS, CHATGPT_RESPONSE_LIMIT
+from .constants import PROMPTS, FUNCTION_DESCRIPTIONS, SAMPLE_CHATGPT_OUTPUT
 
 import os, openai, json
-# Create your views here.
 
 def home(request):
     return render(request, "resume_builder/home.html")
@@ -36,62 +36,31 @@ def set_template(request):
 
 def resume_preview(request):
     request.session['end_status'] = True
+    print(request.session.items())
     return render(request, "resume_builder/resume_preview.html")
 
 def generate_description(request, form_slug):
-    # function_descriptions = [
-    #     {
-    #         'name': 'get_job_description_list',
-    #         'description': 
-    #         '''
-    #             Generate a list of 5 job descriptions based on the job title and company provided. 
-    #         ''',
-    #         'parameters': {
-    #             'type': 'object',
-    #             'properties': {
-    #                 'description': {
-    #                     'type': 'array',
-    #                     'items': {
-    #                         'type': 'string',
-    #                         'description': 'A job description string'
-    #                     },
-    #                     'description': 'List of job description strings based on a job title and company name'
-    #                 }
-    #             },
-    #         },
-    #         'required': ['description']
-    #     },
-    # ]
-
-    # if request.method == 'POST':
-    #     user_input = json.loads(request.body)
-    #     prompt = PROMPTS[form_slug].format(**user_input)
+    openai.api_key = os.getenv('OPENAI_API_KEY')
+    function_descriptions = FUNCTION_DESCRIPTIONS
+    if request.method == 'POST':
+        user_input = json.loads(request.body)
+        prompt = PROMPTS[form_slug].format(**user_input)
         
-    #     response = openai.ChatCompletion.create(
-    #         model ='gpt-3.5-turbo-0613',
-    #         messages =[{'role': 'user', 'content': prompt}],
-    #         functions = function_descriptions,
-    #         function_call = {'name': 'get_job_description_list'},
-    #     )
-    #     output = response.choices[0].message
-    #     cleaned_output = output.to_dict()['function_call']['arguments']
-        cleaned_output = """
-        {
-        "description": [
-            "Design, develop, and test software applications",
-            "Collaborate with cross-functional teams to define and implement software requirements",
-            "Debug and resolve software defects and issues",
-            "Optimize software performance and scalability",
-            "Conduct code reviews and provide feedback for continuous improvement"
-        ]
-        }
-        """
+        response = openai.ChatCompletion.create(
+            model ='gpt-3.5-turbo-0613',
+            messages =[{'role': 'user', 'content': prompt}],
+            functions = function_descriptions,
+            function_call = {'name': form_slug},
+        )
+        output = response.choices[0].message
+        cleaned_output = output.to_dict()['function_call']['arguments']
         print(cleaned_output)
         cleaned_output = json.loads(cleaned_output)
+        # cleaned_output = SAMPLE_CHATGPT_OUTPUT
         return JsonResponse(cleaned_output)
 
 def start_resume_build(request):
-    pass
+    return render(request, 'resume_template.html')
 
 def new_resume(request):
     # if user is not logged in, option to login
@@ -114,6 +83,14 @@ class BaseFormView(FormView):
         context['end_status'] = self.request.session.get('end_status', False)
         return context
 
+@method_decorator(check_end_status, name='dispatch')
+class BaseFormMixin(View):
+    def get_context_data(self, **kwargs):
+        context = kwargs  # Start with provided keyword arguments
+        context['end_status'] = self.request.session.get('end_status', False)
+        print(context)
+        return context
+
 class PersonalDetailView(BaseFormView):
     # Required / Handles GET
     form_class = forms.PersonalDetailsForm
@@ -133,10 +110,10 @@ class PersonalDetailView(BaseFormView):
         self.request.session['personal_detail_data'] = personal_detail_data
         return super().form_valid(form)
 
-@method_decorator(check_end_status, name='dispatch')
-class EducationView(View):
+class EducationView(BaseFormMixin):
     
     def get(self, request):
+
         # Retrieve the data from the session if it exists
         education_data = request.session.get('education_data', None)
         if education_data:
@@ -166,54 +143,108 @@ class EducationView(View):
                 'end_status' : request.end_status
             })
 
-class WorkExperienceView(BaseFormView):
-    # Required / Handles GET
-    form_class = forms.WorkExperienceForm
+class WorkExperienceView(BaseFormMixin):
     template_name = 'resume_builder/work-experience.html'
+    
+    def get(self, request):
+
+        work_experience_data = self.request.session.get('work_experience_data', None)
+
+        if isinstance(work_experience_data, dict): # Remove later
+            work_experience_data = [work_experience_data]
+        
+        # Create formset witht he data from session
+        formset = forms.WorkExperienceFormSet(initial=work_experience_data)
+
+        return render(request, self.template_name, {
+            'formset': formset,
+            'end_status': request.end_status
+        })
+
+    def post(self, request, *args, **kwargs):
+        formset = forms.WorkExperienceFormSet(request.POST)
+
+        if formset.is_valid():
+            serialized_data= []
+            for form in formset:
+                work_experience_data = form.cleaned_data
+                work_experience_data['start_date'] = date_to_datestr(work_experience_data['start_date'])
+                if work_experience_data['end_date']:
+                    work_experience_data['end_date'] = date_to_datestr(work_experience_data['end_date'])
+                serialized_data.append(work_experience_data)
+            self.request.session['work_experience_data'] = serialized_data
+            return redirect('/project')
+        
+        # If the formset isn't valid, re-render with the existing data and errors
+        return render(request, self.template_name, {
+            'formset': formset,
+            'end_status': request.end_status
+        })
+
+class ProjectView(BaseFormMixin):
+ 
+    template_name = 'resume_builder/project.html'
 
     # Retrieve data in session if it exists
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        work_experience_data = self.request.session.get('work_experience_data', None)
-        if work_experience_data:
-            # Convert date strings back to date objects
-            work_experience_data['start_date'] = datestr_to_date(work_experience_data['start_date'])
-            if work_experience_data['end_date']:
-                work_experience_data['end_date'] = datestr_to_date(work_experience_data['end_date'])
-        kwargs['initial'] = work_experience_data
-        return kwargs
+    def get(self, request):
+        project_data = self.request.session.get('project_data', [])
+        if isinstance(project_data, dict): # Remove later
+            project_data = [project_data]
+        
+        # Create formset with the data from the session, or empty if there's none
+        formset = forms.ProjectFormSet(initial=project_data)
 
-    # Required / Handles POST
-    success_url = 'skill'
-    def form_valid(self, form):
-        work_experience_data = form.cleaned_data
-        # Convert date objects back to strings
-        work_experience_data['start_date'] = date_to_datestr(work_experience_data['start_date'])
-        if work_experience_data['end_date'] != None:
-            work_experience_data['end_date'] = date_to_datestr(work_experience_data['end_date'])
-        self.request.session['work_experience_data'] = work_experience_data
-        return super().form_valid(form)
+        return render(request, self.template_name, {
+            'formset': formset,
+            'end_status': request.end_status
+        })
 
-class SkillView(BaseFormView):
-    # Required / Handles GET
-    form_class = forms.SkillForm
+    def post(self, request):
+        formset = forms.ProjectFormSet(request.POST)
+
+        if formset.is_valid():
+            serialized_data = []
+            for form in formset:
+                project_data = form.cleaned_data
+                project_data['start_date'] = date_to_datestr(project_data['start_date'])
+                if project_data['end_date']:
+                    project_data['end_date'] = date_to_datestr(project_data['end_date'])
+                serialized_data.append(project_data)
+            self.request.session['project_data'] = serialized_data
+            return redirect('/skill')
+
+
+class SkillView(BaseFormMixin):
     template_name = 'resume_builder/skill.html'
 
-    # Retrieve data in session if it exists
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        skill_data = self.request.session.get('skill_data', None)
-        kwargs['initial'] = skill_data
-        return kwargs
+    def get(self, request):
+        skill_data = self.request.session.get('skill_data', [])
+        if isinstance(skill_data, dict):
+            skill_data = [skill_data]
+        
+        # Create formset with the data from the session, or empty if there's none
+        formset = forms.SkillFormSet(initial=skill_data)
+        
+        return render(request, self.template_name, {
+            'formset': formset,
+            'end_status': request.end_status
+        })
 
-    # Required / Handles POST
-    success_url = 'certification'
-    def form_valid(self, form):
-        skill_data = form.cleaned_data
-        self.request.session['skill_data'] = skill_data
-        return super().form_valid(form)
+    def post(self, request):
+        formset = forms.SkillFormSet(request.POST)
+
+        if formset.is_valid():
+            serialized_skill_data = [form.cleaned_data for form in formset]
+            self.request.session['skill_data'] = serialized_skill_data
+            return redirect('/certification')
+        
+        # If the formset isn't valid, re-render with the existing data and errors
+        return render(request, self.template_name, {
+            'formset': formset,
+            'end_status': request.end_status
+        })
     
-class CertificationView(BaseFormView):
+class CertificationView(BaseFormMixin):
     # Required / Handles GET
     form_class = forms.CertificationForm
     template_name = "resume_builder/certification.html"
@@ -240,35 +271,8 @@ class CertificationView(BaseFormView):
         self.request.session['certification_data'] = certification_data
         return super().form_valid(form)
 
-class ProjectView(BaseFormView):
-    # Required / Handles GET
-    form_class = forms.ProjectForm
-    template_name = 'resume_builder/project.html'
 
-    # Retrieve data in session if it exists
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        project_data = self.request.session.get('project_data', None)
-        if project_data:
-            # Convert date strings back to date objects
-            project_data['start_date'] = datestr_to_date(project_data['start_date'])
-            if project_data['end_date']:
-                project_data['end_date'] = datestr_to_date(project_data['end_date'])
-        kwargs['initial'] = project_data
-        return kwargs
-    
-    # Required / Handles POST
-    success_url = 'language'
-    def form_valid(self, form):
-        project_data = form.cleaned_data
-        # Convert date objects to strings
-        project_data['start_date'] = date_to_datestr(project_data['start_date'])
-        if project_data['end_date']:
-            project_data['end_date'] = date_to_datestr(project_data['end_date'])
-        self.request.session['project_data'] = project_data
-        return super().form_valid(form)
-
-class LanguageView(BaseFormView):
+class LanguageView(BaseFormMixin):
     # Required / Handles GET
     form_class = forms.LanguageForm
     template_name = 'resume_builder/language.html'

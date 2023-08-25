@@ -7,21 +7,34 @@
     <h1 class="text-center mt-1">Work Experience</h1>
     <form action="" method="POST" class="card p-3 mt-5" autocomplete="off" novalidate>
         {% csrf_token %}
-        <div class="row">
-            <div class="col-6"> {{form.company_name|as_crispy_field}} </div>
-            <div class="col-6"> {{form.location|as_crispy_field}} </div>
+        <div id="form-container">
+            {{formset.management_form}}
+            {% for form in formset%}
+                <div class="django-formset-form">
+                    <div class="row">
+                        <div class="col-6"> {{form.company_name|as_crispy_field}} </div>
+                        <div class="col-6"> {{form.location|as_crispy_field}} </div>
+                    </div>
+                    {{form.job_title|as_crispy_field}} 
+                    <div class="row">
+                        <div class="col-6"> {{form.start_date|as_crispy_field}} </div>
+                        <div class="col-6 "> {{form.end_date|as_crispy_field}} </div>
+                    </div> 
+                    <div>
+                        {{ form.description|as_crispy_field }}
+                        <button data-form-index="{{ forloop.counter }}"  type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#descriptionGeneratorModal">
+                            Generate Description with AI
+                        </button>
+                    </div>
+
+                    <div class="d-flex">
+                        <button type="button" id="add-button" class="btn btn-outline-primary circular-button">+</button>
+                        <button type="button" class="btn btn-outline-danger circular-button remove-form-button {% if forloop.counter == 1 %} inactive{% endif %}">-</button>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
-        {{form.job_title|as_crispy_field}} 
-        <div class="row">
-            <div class="col-6"> {{form.start_date|as_crispy_field}} </div>
-            <div class="col-6 "> {{form.end_date|as_crispy_field}} </div>
-        </div> 
-        <div>
-            {{ form.description|as_crispy_field }}
-            <button data-csrf="{{ csrf_token }}" id="descriptionButton" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#descriptionGeneratorModal">
-                Generate Description with AI
-            </button>
-        </div>        
+
         <div class="d-flex justify-content-between flex-wrap">
             <div>
                 <a href="education" type="button" class="btn btn-outline-secondary mt-3" style="width:auto; font-weight:bold">Back</a>
@@ -29,7 +42,7 @@
             </div>
             {% if end_status %}
             <div>
-                <a href="resume_preview" type="button" class="btn btn-outline-warning m-3" style="width:auto; font-weight:bold">Review</a>
+                <a href="resume_preview" type="button" class="btn btn-outline-warning" style="width:auto; font-weight:bold">Review</a>
             </div>
             {% endif %}
         </div>   
@@ -46,4 +59,5 @@
 </script>
 <script src="{% static 'js/description_generator.js' %}"></script>
 <script src="{% static 'js/textareaHandler.js' %}"></script>
+<script src="{% static 'js/multiple_form_handling.js' %}"></script>
 {% endblock js %}

@@ -32,3 +32,17 @@ a{
     transform-origin: 0 0;  
 }
 
+.circular-button {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.remove-form-button.inactive {
+    pointer-events: none; /* Makes it non-clickable */
+    display: none;
+}
+
