@@ -5,6 +5,15 @@
 {% block content %}
 <div class="container mt-3 mb-3" style="width:80%">
     <h1 class="text-center mt-1">Skills</h1>
+
+    {% if formset.non_form_errors %}
+        <div class="text-center">
+            <div class="custom-error alert alert-danger">
+                {{ formset.non_form_errors|join:", " }}
+            </div>
+        </div>
+    {% endif %}
+
     <form action="" method="POST" class="card p-3 mt-5" autocomplete="off" novalidate>
         {% csrf_token %}
         <div id="form-container">
@@ -22,7 +31,7 @@
         
         <div class="d-flex m-1">
             <div>
-                <a href="work-experience" type="button" class="btn btn-outline-secondary m-3" style="width:auto; font-weight:bold">Back</a>
+                <a href="project" type="button" class="btn btn-outline-secondary m-3" style="width:auto; font-weight:bold">Back</a>
                 <button type="submit" class="btn btn-outline-success m-3" style="width:auto; font-weight:bold">Next</button>
             </div>
             {% if end_status %}
@@ -31,10 +40,10 @@
             </div>
             {% endif %}
         </div>
-          
     </form>
 </div>
 {% endblock content %}
 {% block js %}
+<script src="{% static 'js/textareaHandler.js' %}"></script>
 <script src="{% static 'js/multiple_form_handling.js' %}"></script>
 {% endblock js %}

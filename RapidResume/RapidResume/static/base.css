@@ -10,6 +10,7 @@ a{
     text-decoration: none;
 }
 
+
 .wrapper{
     min-height: 100%;
     margin-bottom: -50px;
@@ -46,3 +47,18 @@ a{
     display: none;
 }
 
+.custom-error{
+    list-style:  none;
+    border-radius: 4px;
+    display: inline-block;
+}
+.custom-error ul{
+    padding: 0;
+}
+.custom-error ul, li{
+    margin: 0;
+    list-style: none;
+    align-items: center;
+    padding: 0.05rem;
+
+}

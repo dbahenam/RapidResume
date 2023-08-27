@@ -1,3 +1,4 @@
+from calendar import c
 from tkinter import W
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.decorators import method_decorator
@@ -15,6 +16,7 @@ from .constants import PROMPTS, FUNCTION_DESCRIPTIONS, SAMPLE_CHATGPT_OUTPUT
 import os, openai, json
 
 def home(request):
+    request.session.clear()
     return render(request, "resume_builder/home.html")
 
 def builder(request):
@@ -161,18 +163,19 @@ class WorkExperienceView(BaseFormMixin):
             'end_status': request.end_status
         })
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         formset = forms.WorkExperienceFormSet(request.POST)
-
         if formset.is_valid():
             serialized_data= []
             for form in formset:
-                work_experience_data = form.cleaned_data
-                work_experience_data['start_date'] = date_to_datestr(work_experience_data['start_date'])
-                if work_experience_data['end_date']:
-                    work_experience_data['end_date'] = date_to_datestr(work_experience_data['end_date'])
-                serialized_data.append(work_experience_data)
+                if form.has_changed():  # This will be False for empty forms
+                    work_experience_data = form.cleaned_data
+                    work_experience_data['start_date'] = date_to_datestr(work_experience_data['start_date'])
+                    if work_experience_data['end_date']:
+                        work_experience_data['end_date'] = date_to_datestr(work_experience_data['end_date'])
+                    serialized_data.append(work_experience_data)
             self.request.session['work_experience_data'] = serialized_data
+            print(self.request.session['work_experience_data'])
             return redirect('/project')
         
         # If the formset isn't valid, re-render with the existing data and errors
@@ -205,13 +208,20 @@ class ProjectView(BaseFormMixin):
         if formset.is_valid():
             serialized_data = []
             for form in formset:
-                project_data = form.cleaned_data
-                project_data['start_date'] = date_to_datestr(project_data['start_date'])
-                if project_data['end_date']:
-                    project_data['end_date'] = date_to_datestr(project_data['end_date'])
-                serialized_data.append(project_data)
+                if form.has_changed():  # This will be False for empty forms
+                    project_data = form.cleaned_data
+                    project_data['start_date'] = date_to_datestr(project_data['start_date'])
+                    if project_data['end_date']:
+                        project_data['end_date'] = date_to_datestr(project_data['end_date'])
+                    serialized_data.append(project_data)
             self.request.session['project_data'] = serialized_data
             return redirect('/skill')
+        
+        # If the formset isn't valid, re-render with the existing data and errors
+        return render(request, self.template_name, {
+            'formset': formset,
+            'end_status': request.end_status
+        })
 
 
 class SkillView(BaseFormMixin):
@@ -234,8 +244,12 @@ class SkillView(BaseFormMixin):
         formset = forms.SkillFormSet(request.POST)
 
         if formset.is_valid():
-            serialized_skill_data = [form.cleaned_data for form in formset]
-            self.request.session['skill_data'] = serialized_skill_data
+            serialized_data = []
+            for form in formset:
+                if form.has_changed():  # This will be False for empty forms
+                    skill_data = form.cleaned_data
+                    serialized_data.append(skill_data)
+            self.request.session['skill_data'] = serialized_data
             return redirect('/certification')
         
         # If the formset isn't valid, re-render with the existing data and errors
@@ -245,49 +259,73 @@ class SkillView(BaseFormMixin):
         })
     
 class CertificationView(BaseFormMixin):
-    # Required / Handles GET
-    form_class = forms.CertificationForm
     template_name = "resume_builder/certification.html"
 
-    # Retrieve data in session if it exists
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        certification_data = self.request.session.get('certification_data', None)
-        if certification_data:
-            # Convert date strings back to date objects
-            certification_data['date_issued'] = datestr_to_date(certification_data['date_issued'])
-            if certification_data['expiration_date']:
-                certification_data['expiration_date'] = datestr_to_date(certification_data['expiration_date'])
-        kwargs['initial'] = certification_data
-        return kwargs
+    def get(self, request):
+        certification_data = self.request.session.get('certification_data', [])
+        if isinstance(certification_data, dict):
+            certification_data = [certification_data]
+        
+        # Create formset with the data from the session, or empty if there's none
+        formset = forms.CertificationFormSet
 
-    # Required / Handles POST
-    success_url = 'project'
-    def form_valid(self, form):
-        certification_data = form.cleaned_data
-        certification_data['date_issued'] = date_to_datestr(certification_data['date_issued'])
-        if certification_data['expiration_date']:
-            certification_data['expiration_date'] = date_to_datestr(certification_data['expiration_date'])
-        self.request.session['certification_data'] = certification_data
-        return super().form_valid(form)
+        return render(request, self.template_name, {
+            'formset': formset,
+            'end_status': request.end_status
+        })
 
+    def post(self, request):
+        formset = forms.CertificationFormSet(request.POST)
+
+        if formset.is_valid():
+            serialized_data = []
+            for form in formset:
+                if form.has_changed():
+                    certification_data = form.cleaned_data
+                    certification_data['date_issued'] = date_to_datestr(certification_data['date_issued'])
+                    if certification_data['expiration_date']:
+                        certification_data['end_date'] = date_to_datestr(certification_data['expiration_date'])
+                    serialized_data.append(certification_data)
+            self.request.session['certification_data'] = serialized_data
+            return redirect('/language')
+        
+        # If the formset isn't valid, re-render with the existing data and errors
+        print(formset.errors)
+        return render(request, self.template_name, {
+            'formset': formset,
+            'end_status': request.end_status
+        })
 
 class LanguageView(BaseFormMixin):
-    # Required / Handles GET
-    form_class = forms.LanguageForm
     template_name = 'resume_builder/language.html'
 
-    # Retrieve data in session if it exists
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        language_data = self.request.session.get('language_data', None)
-        kwargs['initial'] = language_data
-        return kwargs
-    
-    # Required / Handles POST
-    success_url = 'resume_preview'
-    def form_valid(self, form):
-        language_data = form.cleaned_data
-        self.request.session['language_data'] = language_data
-        return super().form_valid(form)
+    def get(self, request):
+        language_data = self.request.session.get('language_data', [])
+        if isinstance(language_data, dict):
+            language_data = [language_data]
+        
+        # Create formset with the data from the session, or empty if there's none
+        formset = forms.LanguageFormSet
 
+        return render(request, self.template_name, {
+            'formset': formset,
+            'end_status': request.end_status
+        })
+
+    def post(self, request):
+        formset = forms.LanguageFormSet(request.POST)
+
+        if formset.is_valid():
+            serialized_data = []
+            for form in formset:
+                if form.has_changed():
+                    language_data = form.cleaned_data
+                    serialized_data.append(language_data)
+            self.request.session['language_data'] = serialized_data
+            return redirect('/resume_preview')
+        
+        # If the formset isn't valid, re-render with the existing data and errors
+        return render(request, self.template_name, {
+            'formset': formset,
+            'end_status': request.end_status
+        })

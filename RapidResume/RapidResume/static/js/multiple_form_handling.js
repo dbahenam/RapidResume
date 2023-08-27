@@ -14,11 +14,15 @@ document.addEventListener('DOMContentLoaded', function () {
             clonedForm.querySelectorAll('input, select, textarea').forEach(input => {
                 input.name = input.name.replace('-' + (formCount - 1) + '-', '-' + formCount + '-');
                 input.id = input.id.replace('-' + (formCount - 1) + '-', '-' + formCount + '-');
+
                 if (input.tagName === 'INPUT' || input.tagName === 'TEXTAREA') {
                     input.value = ''; // clear input values
                 }
             });
 
+            const generateDescriptionButton = clonedForm.querySelector('[data-form-index]');
+            generateDescriptionButton.setAttribute('data-form-index', formCount + 1);
+            
             container.appendChild(clonedForm);
 
             const removeButton = clonedForm.querySelector('.remove-form-button');

@@ -5,6 +5,15 @@
 {% block content %}
 <div class="container mt-3 mb-3" style="width:80%">
     <h1 class="text-center mt-1">Project</h1>
+
+    {% if formset.non_form_errors %}
+        <div class="text-center">
+            <div class="custom-error alert alert-danger">
+                {{ formset.non_form_errors|join:", " }}
+            </div>
+        </div>
+    {% endif %}
+
     <form action="" method="POST" class="card p-3 mt-5" autocomplete="off" novalidate>
         {% csrf_token %}
         <div id="form-container">

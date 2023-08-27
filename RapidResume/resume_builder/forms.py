@@ -63,14 +63,12 @@ class WorkExperienceForm(forms.ModelForm):
         model = models.WorkExperience
         exclude = ["resume"]
 
-WorkExperienceFormSet = forms.modelformset_factory(models.WorkExperience, form=WorkExperienceForm, extra=1)
 
 class ProjectForm(forms.ModelForm):
 
     class Meta:
         model = models.Project
         exclude = ["resume"]
-ProjectFormSet = forms.modelformset_factory(models.Project, form=ProjectForm, extra=1)
 
 class SkillForm(forms.ModelForm):
 
@@ -78,7 +76,6 @@ class SkillForm(forms.ModelForm):
         model = models.Skill
         exclude = ["resume"]
 
-SkillFormSet = forms.modelformset_factory(models.Skill, form=SkillForm, extra=1)
 
 class CertificationForm(forms.ModelForm):
 
@@ -86,8 +83,28 @@ class CertificationForm(forms.ModelForm):
         model = models.Certification
         exclude = ["resume"]
 
+
 class LanguageForm(forms.ModelForm):
 
     class Meta:
         model = models.Language
         exclude = ["resume"]
+        
+class CustomBaseFormSet(forms.BaseFormSet):
+    def clean(self):
+        super().clean()
+        total_empty_forms = sum(1 for form in self.forms if not form.has_changed())
+        if total_empty_forms == len(self.forms):
+            raise forms.ValidationError('At least one form must be filled out.')
+
+WorkExperienceFormSet = forms.formset_factory(
+    WorkExperienceForm, 
+    formset=CustomBaseFormSet
+)
+
+WorkExperienceFormSet = forms.modelformset_factory(models.WorkExperience, form=WorkExperienceForm, formset=CustomBaseFormSet, extra=1,)
+ProjectFormSet = forms.modelformset_factory(models.Project, form=ProjectForm, formset=CustomBaseFormSet, extra=1)
+SkillFormSet = forms.modelformset_factory(models.Skill, form=SkillForm, formset=CustomBaseFormSet, extra=1)
+CertificationFormSet = forms.modelformset_factory(models.Certification, form=CertificationForm, formset=CustomBaseFormSet, extra=1)
+LanguageFormSet = forms.modelformset_factory(models.Language, form=LanguageForm, formset=CustomBaseFormSet, extra=1)
+

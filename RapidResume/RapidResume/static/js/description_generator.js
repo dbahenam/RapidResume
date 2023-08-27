@@ -26,8 +26,8 @@ function makeDescriptionRequest(event) {
 
     var descriptionField = document.querySelector(`[name="form-${currentFormIndex-1}-description"]`);
     if (!descriptionField) {
-        console.error(`Description field with index ${currentFormIndex} not found.`);
-        console.log(`Current form index: ${currentFormIndex}`);
+        console.error(`Description field with index ${currentFormIndex-1} not found.`);
+        console.log(`Current form index: ${currentFormIndex-1}`);
         return;
     }
 
@@ -102,7 +102,7 @@ function createAndShowModal(descriptions) {
 
     document.querySelectorAll('.add-btn').forEach((btn, index) => {
         btn.addEventListener('click', function() {
-            const descriptionField = document.querySelector(`[name="form-${currentFormIndex}-description"]`);
+            const descriptionField = document.querySelector(`[name="form-${currentFormIndex-1}-description"]`);
             
             const bullet = "• ";
 
@@ -119,7 +119,7 @@ function createAndShowModal(descriptions) {
             if (descriptionsMap.has(index)) {
                 descriptionsMap.delete(index);
 
-                const descriptionField = document.querySelector(`[name="form-${currentFormIndex}-description"]`);
+                const descriptionField = document.querySelector(`[name="form-${currentFormIndex-1}-description"]`);
                 descriptionField.value = [...descriptionsMap.values()].join('');
                 
                 document.querySelector(`.add-btn[data-index="${index}"]`).disabled = false;
