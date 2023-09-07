@@ -1,6 +1,4 @@
-from calendar import c
-from tkinter import W
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.generic.base import View
 from django.views.generic.edit import FormView
@@ -13,10 +11,14 @@ from .decorators import check_end_status
 from .utils import date_to_datestr, datestr_to_date
 from .constants import PROMPTS, FUNCTION_DESCRIPTIONS, SAMPLE_CHATGPT_OUTPUT
 
+from django.http import FileResponse
+from io import BytesIO
+from xhtml2pdf import pisa
+from django.template.loader import get_template
+
 import os, openai, json
 
 def home(request):
-    request.session.clear()
     return render(request, "resume_builder/home.html")
 
 def builder(request):
@@ -38,7 +40,7 @@ def set_template(request):
 
 def resume_preview(request):
     request.session['end_status'] = True
-    print(request.session.items())
+    # print(request.session.items())
     return render(request, "resume_builder/resume_preview.html")
 
 def generate_description(request, form_slug):
@@ -56,13 +58,47 @@ def generate_description(request, form_slug):
         )
         output = response.choices[0].message
         cleaned_output = output.to_dict()['function_call']['arguments']
-        print(cleaned_output)
+        # print(cleaned_output)
         cleaned_output = json.loads(cleaned_output)
         # cleaned_output = SAMPLE_CHATGPT_OUTPUT
         return JsonResponse(cleaned_output)
 
 def start_resume_build(request):
-    return render(request, 'resume_template.html')
+    context = dict(request.session.items())
+    print(request.session.items())
+    return render(request, 'resume_template.html', context)
+
+def render_to_pdf(input, context_dict={}):
+    if context_dict is not None:  # If a context is provided, treat input as a template
+        template = get_template(input)
+        html = template.render(context_dict)
+    else:
+        html = input  # If no context is provided, treat input as rendered HTML
+
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
+    print(pdf.err)  # To see if there's any error code
+
+    if not pdf.err:
+        return FileResponse(result, content_type="application/pdf")
+    return None
+
+def download_resume_pdf(request):
+    # Fetch the same data from the session
+    context = dict(request.session.items())
+    template = get_template('includes/resume_body.html')
+    html = template.render(context)
+    # print(html[:500])
+    # return HttpResponse(html)
+    pdf = render_to_pdf(html)
+
+    if pdf:
+        response = HttpResponse(pdf, content_type='application/pdf')
+        filename = "Resume_%s.pdf" %("12341231")
+        content = "attachment; filename='%s" %(filename)
+        response['Content-Disposition'] = content
+        return response
+    return HttpResponse("Error generating PDF")
 
 def new_resume(request):
     # if user is not logged in, option to login
@@ -90,7 +126,6 @@ class BaseFormMixin(View):
     def get_context_data(self, **kwargs):
         context = kwargs  # Start with provided keyword arguments
         context['end_status'] = self.request.session.get('end_status', False)
-        print(context)
         return context
 
 class PersonalDetailView(BaseFormView):
@@ -175,7 +210,7 @@ class WorkExperienceView(BaseFormMixin):
                         work_experience_data['end_date'] = date_to_datestr(work_experience_data['end_date'])
                     serialized_data.append(work_experience_data)
             self.request.session['work_experience_data'] = serialized_data
-            print(self.request.session['work_experience_data'])
+            # print(self.request.session['work_experience_data'])
             return redirect('/project')
         
         # If the formset isn't valid, re-render with the existing data and errors

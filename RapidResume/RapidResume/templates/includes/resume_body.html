@@ -1,0 +1,361 @@
+{% load static %}
+<link href={% static "resume_template.css" %} rel="stylesheet">
+<div class="resume-body">
+    <div class="center">
+      <div class="text-center">
+        <p>
+          <strong
+            ><span class="smallcaps"><h1>{{personal_detail_data.first_name}} {{personal_detail_data.last_name}}</h1></span></strong
+          ><br />
+          123-456-7890 <span class="math inline">|</span>
+          <a href="mailto:x@x.com"><u>jake@su.edu</u></a>
+          <span class="math inline">|</span>
+          <a href="https://linkedin.com/in/..."><u>linkedin.com/in/jake</u></a>
+          <span class="math inline">|</span>
+          <a href="https://github.com/..."><u>github.com/jake</u></a>
+        </p>
+      </div>
+    </div>
+    <h3 id="education">Education</h3>
+    <ul>
+      <li>
+        <table>
+          <tbody>
+            <tr class="odd">
+              <td style="text-align: left">
+                <strong>{{education_data.school_name}}</strong>
+              </td>
+              <td style="text-align: right">San Diego, CA</td>
+            </tr>
+            <tr class="even">
+              <td style="text-align: left">
+                <em>{{education_data.degree}}</em>
+              </td>
+              <td style="text-align: right"><em>{{education_data.start_date}}</em></td>
+            </tr> 
+          </tbody>
+        </table>
+      </li>
+      {% comment %} <li>
+        <table>
+          <tbody>
+            <tr class="odd">        
+                <td style="text-align: left"><strong>Blinn College</strong></td>
+                <td style="text-align: right">Bryan, TX</td>
+            </tr>
+            <tr class="even">
+              <td style="text-align: left">
+                <em>Associate’s in Liberal Arts</em>
+              </td>
+              <td style="text-align: right"><em>Aug. 2014 – May 2018</em></td>
+            </tr>
+          </tbody>
+        </table>
+      </li> {% endcomment %}
+    </ul>
+    <h3 id="experience">Experience</h3>
+    <ul>
+      <li>
+        <table>
+          <tbody>
+            {% for work_experience in work_experience_data%}
+            <tr class="odd">
+              <td style="text-align: left">
+                <strong>{{work_experience.job_title}}</strong>
+              </td>
+              <td style="text-align: right">{{work_experience.start_date}}{% if work_experience.end_date %} - {{work_experience.end_date}}{% endif %}</td>
+            </tr>
+            <tr class="even">
+              <td style="text-align: left"><em>{{work_experience.company_name}}</em></td>
+              <td style="text-align: right"><em>{{work_experience.location}}</em></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <ul>
+          <li>
+            <p>
+              <span>
+                <span>
+                  Developed a REST API using FastAPI and PostgreSQL to store data
+                  from learning management systems
+                </span>
+              </span>
+            </p>
+          </li>
+          <li>
+            <p>
+              <span>
+                <span
+                  >Developed a full-stack web application using Flask, React,
+                  PostgreSQL and Docker to analyze GitHub data
+                </span>
+              </span>
+            </p>
+          </li>
+          <li>
+            <p>
+              <span>
+                <span
+                  >Explored ways to visualize GitHub collaboration in a classroom
+                  setting
+                </span>
+              </span>
+            </p>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <table>
+          <tbody>
+            <tr class="odd">
+              <td style="text-align: left">
+                <strong>Information Technology Support Specialist</strong>
+              </td>
+              <td style="text-align: right">Sep. 2018 – Present</td>
+            </tr>
+            <tr class="even">
+              <td style="text-align: left"><em>Southwestern University</em></td>
+              <td style="text-align: right"><em>Georgetown, TX</em></td>
+            </tr>
+          </tbody>
+        </table>
+        <ul>
+          <li>
+            <p>
+              <span>
+                <span
+                  >Communicate with managers to set up campus computers used on
+                  campus
+                </span>
+              </span>
+            </p>
+          </li>
+          <li>
+            <p>
+              <span>
+                <span
+                  >Assess and troubleshoot computer problems brought by students,
+                  faculty and staff
+                </span>
+              </span>
+            </p>
+          </li>
+          <li>
+            <p>
+              <span>
+                <span
+                  >Maintain upkeep of computers, classroom equipment, and 200
+                  printers across campus
+                </span>
+              </span>
+            </p>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <table>
+          <tbody>
+            <tr class="odd">
+              <td style="text-align: left">
+                <strong>Artificial Intelligence Research Assistant</strong>
+              </td>
+              <td style="text-align: right">May 2019 – July 2019</td>
+            </tr>
+            <tr class="even">
+              <td style="text-align: left"><em>Southwestern University</em></td>
+              <td style="text-align: right"><em>Georgetown, TX</em></td>
+            </tr>
+          </tbody>
+        </table>
+        <ul>
+          <li>
+            <p>
+              <span>
+                <span
+                  >Explored methods to generate video game dungeons based off of
+                  <em>The Legend of Zelda</em>
+                </span>
+              </span>
+            </p>
+          </li>
+          <li>
+            <p>
+              <span>
+                <span
+                  >Developed a game in Java to test the generated dungeons
+                </span>
+              </span>
+            </p>
+          </li>
+          <li>
+            <p>
+              <span>
+                <span
+                  >Contributed 50K+ lines of code to an established codebase via
+                  Git
+                </span>
+              </span>
+            </p>
+          </li>
+          <li>
+            <p>
+              <span>
+                <span
+                  >Conducted a human subject study to determine which video game
+                  dungeon generation technique is enjoyable
+                </span>
+              </span>
+            </p>
+          </li>
+          <li>
+            <p>
+              <span>
+                <span
+                  >Wrote an 8-page paper and gave multiple presentations on-campus
+                </span>
+              </span>
+            </p>
+          </li>
+          <li>
+            <p>
+              <span>
+                <span
+                  >Presented virtually to the World Conference on Computational
+                  Intelligence
+                </span>
+              </span>
+            </p>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <h3 id="projects">Projects</h3>
+    <ul>
+      <li>
+        <table>
+          <tbody>
+            <tr class="odd">
+              <td style="text-align: left">
+                <strong>Gitlytics</strong> <span class="math inline">|</span>
+                <em>Python, Flask, React, PostgreSQL, Docker</em>
+              </td>
+              <td style="text-align: right">June 2020 – Present</td>
+            </tr>
+          </tbody>
+        </table>
+        <ul>
+          <li>
+            <p>
+              <span>
+                <span
+                  >Developed a full-stack web application using with Flask serving
+                  a REST API with React as the frontend
+                </span>
+              </span>
+            </p>
+          </li>
+          <li>
+            <p>
+              <span>
+                <span
+                  >Implemented GitHub OAuth to get data from user’s repositories
+                </span>
+              </span>
+            </p>
+          </li>
+          <li>
+            <p>
+              <span>
+                <span>Visualized GitHub data to show collaboration </span>
+              </span>
+            </p>
+          </li>
+          <li>
+            <p>
+              <span>
+                <span>Used Celery and Redis for asynchronous tasks </span>
+              </span>
+            </p>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <table>
+          <tbody>
+            <tr class="odd">
+              <td style="text-align: left">
+                <strong>Simple Paintball</strong>
+                <span class="math inline">|</span>
+                <em>Spigot API, Java, Maven, TravisCI, Git</em>
+              </td>
+              <td style="text-align: right">May 2018 – May 2020</td>
+            </tr>
+          </tbody>
+        </table>
+        <ul>
+          <li>
+            <p>
+              <span>
+                <span
+                  >Developed a Minecraft server plugin to entertain kids during
+                  free time for a previous job
+                </span>
+              </span>
+            </p>
+          </li>
+          <li>
+            <p>
+              <span>
+                <span
+                  >Published plugin to websites gaining 2K+ downloads and an
+                  average 4.5/5-star review
+                </span>
+              </span>
+            </p>
+          </li>
+          <li>
+            <p>
+              <span>
+                <span
+                  >Implemented continuous delivery using TravisCI to build the
+                  plugin upon new a release
+                </span>
+              </span>
+            </p>
+          </li>
+          <li>
+            <p>
+              <span>
+                <span
+                  >Collaborated with Minecraft server administrators to suggest
+                  features and get feedback about the plugin
+                </span>
+              </span>
+            </p>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <h3 id="technical-skills">Technical Skills</h3>
+    <div class="itemize">
+      <p>
+        <span>
+          <strong>Languages</strong
+          ><span
+            >: Java, Python, C/C++, SQL (Postgres), JavaScript, HTML/CSS, R</span
+          ><br />
+          <strong>Frameworks</strong
+          ><span
+            >: React, Node.js, Flask, JUnit, WordPress, Material-UI, FastAPI</span
+          ><br />
+          <strong>Developer Tools</strong
+          ><span
+            >: Git, Docker, TravisCI, Google Cloud Platform, VS Code, Visual
+            Studio, PyCharm, IntelliJ, Eclipse</span
+          ><br />
+          <strong>Libraries</strong><span>: pandas, NumPy, Matplotlib</span>
+        </span>
+      </p>
+    </div>
+  </div>
