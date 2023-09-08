@@ -14,9 +14,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
     python3-dev \
     wkhtmltopdf
 
-
-COPY . /app
 WORKDIR /app
+
+COPY ./RapidResume .
 
 RUN pip install -r requirements.txt
 

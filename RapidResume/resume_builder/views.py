@@ -9,12 +9,11 @@ from . import forms
 from . import models
 from .decorators import check_end_status
 from .utils import date_to_datestr, datestr_to_date
-from .constants import PROMPTS, FUNCTION_DESCRIPTIONS, SAMPLE_CHATGPT_OUTPUT
+from .constants import PROMPTS, FUNCTION_DESCRIPTIONS
 
-from django.http import FileResponse
-from io import BytesIO
-from xhtml2pdf import pisa
 from django.template.loader import get_template
+
+import pdfkit
 
 import os, openai, json
 
@@ -40,7 +39,7 @@ def set_template(request):
 
 def resume_preview(request):
     request.session['end_status'] = True
-    # print(request.session.items())
+    print(request.session.items())
     return render(request, "resume_builder/resume_preview.html")
 
 def generate_description(request, form_slug):
@@ -63,24 +62,33 @@ def generate_description(request, form_slug):
         # cleaned_output = SAMPLE_CHATGPT_OUTPUT
         return JsonResponse(cleaned_output)
 
+def prepare_descriptions(session_data):
+
+    def split_description(description):
+        return description.replace('\r\n', '\n').split('\n')
+
+    keys_with_description = ['education_data', 'work_experience_data', 'project_data']  # Extend this list as needed
+
+    # Loop through each key and process the descriptions
+    for key in keys_with_description:
+        if key in session_data:
+            for item in session_data[key]:
+                if 'description' in item:
+                    item['description'] = split_description(item['description'])
+
+    return session_data
+
 def start_resume_build(request):
     context = dict(request.session.items())
     print(request.session.items())
     return render(request, 'resume_template.html', context)
 
-def render_to_pdf(input, context_dict={}):
-    if context_dict is not None:  # If a context is provided, treat input as a template
-        template = get_template(input)
-        html = template.render(context_dict)
-    else:
-        html = input  # If no context is provided, treat input as rendered HTML
+def render_to_pdf(html_content):
+    # Convert HTML to PDF using pdfkit
+    pdf = pdfkit.from_string(html_content, False)  # Second argument False means it will return the PDF as bytes
 
-    result = BytesIO()
-    pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
-    print(pdf.err)  # To see if there's any error code
-
-    if not pdf.err:
-        return FileResponse(result, content_type="application/pdf")
+    if pdf:
+        return pdf
     return None
 
 def download_resume_pdf(request):
@@ -88,8 +96,7 @@ def download_resume_pdf(request):
     context = dict(request.session.items())
     template = get_template('includes/resume_body.html')
     html = template.render(context)
-    # print(html[:500])
-    # return HttpResponse(html)
+    
     pdf = render_to_pdf(html)
 
     if pdf:
