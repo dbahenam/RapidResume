@@ -32,7 +32,7 @@
                     {{form.cert_url|as_crispy_field}} 
                     <div class="d-flex">
                         <button type="button" id="add-button" class="btn btn-outline-primary circular-button">+</button>
-                        <button type="button" class="btn btn-outline-danger circular-button remove-form-button {% if forloop.counter == 1 %} inactive{% endif %}">-</button>
+                        <button type="button" class="btn btn-outline-danger circular-button remove-form-button {% if forloop.counter0 == 0 %} inactive{% endif %}">-</button>
                     </div>
                 </div>
             {% endfor %}

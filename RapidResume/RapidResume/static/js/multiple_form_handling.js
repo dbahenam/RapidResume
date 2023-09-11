@@ -1,19 +1,23 @@
 document.addEventListener('DOMContentLoaded', function () {
+
     const container = document.getElementById('form-container');
 
     container.addEventListener('click', function (event) {
         if (event.target.id === 'add-button') {
-            const lastForm = container.querySelector('.django-formset-form:last-of-type');
-            const clonedForm = lastForm.cloneNode(true);
+            const lastForm = container.querySelector('.django-formset-form:last-of-type'); // last-of-type is CSS Selector
+            const clonedForm = lastForm.cloneNode(true); // clone form and all of its subtree elements
 
             // Find the current form count
             const formCountInput = document.querySelector('#id_form-TOTAL_FORMS');
-            let formCount = parseInt(formCountInput.value);
+            let prevFormCount = parseInt(formCountInput.value);
+
+            // Update form count
+            let updatedFormCount = prevFormCount + 1;
 
             // Clean cloned form from previous inputs
             clonedForm.querySelectorAll('input, select, textarea').forEach(input => {
-                input.name = input.name.replace('-' + (formCount - 1) + '-', '-' + formCount + '-');
-                input.id = input.id.replace('-' + (formCount - 1) + '-', '-' + formCount + '-');
+                input.name = input.name.replace('-' + prevFormCount + '-', '-' + updatedFormCount + '-');
+                input.id = input.id.replace('-' + prevFormCount + '-', '-' + updatedFormCount + '-');
 
                 if (input.tagName === 'INPUT' || input.tagName === 'TEXTAREA') {
                     input.value = ''; // clear input values
@@ -21,7 +25,9 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             const generateDescriptionButton = clonedForm.querySelector('[data-form-index]');
-            generateDescriptionButton.setAttribute('data-form-index', formCount + 1);
+            if (generateDescriptionButton) {
+                generateDescriptionButton.setAttribute('data-form-index', updatedFormCount);
+            }
             
             container.appendChild(clonedForm);
 
@@ -31,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             // Increment form count in management form
-            formCountInput.value = formCount + 1;
+            formCountInput.value = updatedFormCount;
 
         } else if (event.target.classList.contains('remove-form-button')) {
             const parentForm = event.target.closest('.django-formset-form');

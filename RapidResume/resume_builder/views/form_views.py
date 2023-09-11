@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic.base import View
 from django.views.generic.edit import FormView
 from django.utils.decorators import method_decorator
@@ -219,11 +219,12 @@ class CertificationView(BaseFormMixin):
 
     def get(self, request):
         certification_data = self.request.session.get('certification_data', [])
+        print("cert data: ", certification_data)
         if isinstance(certification_data, dict):
             certification_data = [certification_data]
         
         # Create formset with the data from the session, or empty if there's none
-        formset = forms.CertificationFormSet
+        formset = forms.CertificationFormSet(initial=certification_data)
 
         return render(request, self.template_name, {
             'formset': formset,
@@ -261,7 +262,7 @@ class LanguageView(BaseFormMixin):
             language_data = [language_data]
         
         # Create formset with the data from the session, or empty if there's none
-        formset = forms.LanguageFormSet
+        formset = forms.LanguageFormSet(initial=language_data)
 
         return render(request, self.template_name, {
             'formset': formset,

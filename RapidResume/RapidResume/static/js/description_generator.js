@@ -2,32 +2,33 @@
 let currentFormIndex;
 
 document.addEventListener('DOMContentLoaded', function () {
+
     document.getElementById('form-container').addEventListener('click', function(event) {
         let button = event.target.closest('[data-form-index]');
         if (button) {
-            displayModalForInput(button);
+            setCurrentFormIndex(button);
         }
     });
 
     // Event listener for the "Generate" button inside the modal
     document.getElementById('generateDescription').addEventListener('click', function (event) {
+        // With bootstrap settings, once this button is clicked the modal asking for user input will display
         makeDescriptionRequest(event);
     });
 });
 
-function displayModalForInput(button) {
+function setCurrentFormIndex(button) {
     currentFormIndex = button.getAttribute('data-form-index');
-    console.log(currentFormIndex)
-
+    console.log(currentFormIndex);
 }
 
 function makeDescriptionRequest(event) {
     console.log('Generate Description button clicked!'); // Debugging line
 
-    var descriptionField = document.querySelector(`[name="form-${currentFormIndex-1}-description"]`);
+    var descriptionField = document.querySelector(`[name="form-${currentFormIndex}-description"]`);
     if (!descriptionField) {
-        console.error(`Description field with index ${currentFormIndex-1} not found.`);
-        console.log(`Current form index: ${currentFormIndex-1}`);
+        console.error(`Description field with index ${currentFormIndex} not found.`);
+        console.log(`Current form index: ${currentFormIndex}`);
         return;
     }
 
@@ -94,15 +95,17 @@ function createAndShowModal(descriptions) {
     // Append the modal to the body
     document.body.insertAdjacentHTML('beforeend', modalHtml);
 
+    // Display newly formed modal
     let descriptionListModal = new bootstrap.Modal(document.getElementById('descriptionListModal'));
     descriptionListModal.show();
 
     // List of descriptions
     let descriptionsMap = new Map();
 
+    // For the add, erase buttons in the description list modal
     document.querySelectorAll('.add-btn').forEach((btn, index) => {
         btn.addEventListener('click', function() {
-            const descriptionField = document.querySelector(`[name="form-${currentFormIndex-1}-description"]`);
+            const descriptionField = document.querySelector(`[name="form-${currentFormIndex}-description"]`);
             
             const bullet = "• ";
 
@@ -119,7 +122,7 @@ function createAndShowModal(descriptions) {
             if (descriptionsMap.has(index)) {
                 descriptionsMap.delete(index);
 
-                const descriptionField = document.querySelector(`[name="form-${currentFormIndex-1}-description"]`);
+                const descriptionField = document.querySelector(`[name="form-${currentFormIndex}-description"]`);
                 descriptionField.value = [...descriptionsMap.values()].join('');
                 
                 document.querySelector(`.add-btn[data-index="${index}"]`).disabled = false;

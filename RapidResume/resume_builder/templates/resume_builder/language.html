@@ -23,7 +23,7 @@
                     {{form|crispy}}
                     <div class="d-flex">
                         <button type="button" id="add-button" class="btn btn-outline-primary circular-button">+</button>
-                        <button type="button" class="btn btn-outline-danger circular-button remove-form-button {% if forloop.counter == 1 %} inactive{% endif %}">-</button>
+                        <button type="button" class="btn btn-outline-danger circular-button remove-form-button {% if forloop.counter0 == 0 %} inactive{% endif %}">-</button>
                     </div>
                 </div>
             {% endfor %}
@@ -31,7 +31,7 @@
 
         <div class="d-flex m-1">
             <div>
-                <a href="project" type="button" class="btn btn-outline-secondary m-3" style="width:auto; font-weight:bold">Back</a>
+                <a href="certification" type="button" class="btn btn-outline-secondary m-3" style="width:auto; font-weight:bold">Back</a>
                 <button type="submit" class="btn btn-outline-success m-3" style="width:auto; font-weight:bold">Next</button>
             </div>
             {% if end_status %}

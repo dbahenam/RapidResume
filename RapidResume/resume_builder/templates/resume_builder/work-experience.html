@@ -16,7 +16,7 @@
 
     <form action="" method="POST" class="card p-3 mt-5" autocomplete="off" >
         {% csrf_token %}
-        <div id="form-container">
+        <div id="form-container"> <!--Container-->
             {{formset.management_form}}
             {% for form in formset%}
                 <div class="django-formset-form">
@@ -31,14 +31,14 @@
                     </div> 
                     <div>
                         {{ form.description|as_crispy_field }}
-                        <button data-form-index="{{ forloop.counter }}"  type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#descriptionGeneratorModal">
+                        <button data-form-index="{{ forloop.counter0}}"  type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#descriptionGeneratorModal">
                             Generate Description with AI
                         </button>
                     </div>
 
                     <div class="d-flex">
                         <button type="button" id="add-button" class="btn btn-outline-primary circular-button">+</button>
-                        <button type="button" class="btn btn-outline-danger circular-button remove-form-button {% if forloop.counter == 1 %} inactive{% endif %}">-</button>
+                        <button type="button" class="btn btn-outline-danger circular-button remove-form-button {% if forloop.counter0 == 0 %} inactive{% endif %}">-</button>
                     </div>
                 </div>
             {% endfor %}

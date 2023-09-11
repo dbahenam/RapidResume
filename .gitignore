@@ -1,2 +1,5 @@
 env/
 .env
+.prettierignore*
+db.sqlite3
+__pycache__/
