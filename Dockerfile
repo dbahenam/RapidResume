@@ -3,11 +3,7 @@ FROM ubuntu:20.04
 RUN apt-get update && \
     apt-get install -yq tzdata && \
     ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
-    dpkg-reconfigure -f noninteractive tzdata \ 
-    rm /var/lib/dpkg/info/fprintd.postinst \ 
-    rm /var/lib/dpkg/info/libfprint-2-2*.postinst \
-    rm /var/lib/dpkg/info/libpam-fprintd*.postinst \
-    dpkg --configure -a
+    dpkg-reconfigure -f noninteractive tzdata 
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
@@ -15,6 +11,10 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
     python3 \
     python3-pip \
+    rm /var/lib/dpkg/info/fprintd.postinst \ 
+    rm /var/lib/dpkg/info/libfprint-2-2*.postinst \
+    rm /var/lib/dpkg/info/libpam-fprintd*.postinst \
+    dpkg --configure -a \
     wkhtmltopdf
 
 WORKDIR /app
