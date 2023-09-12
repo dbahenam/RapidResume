@@ -11,11 +11,7 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
     python3 \
     python3-pip \
-    rm /var/lib/dpkg/info/fprintd.postinst \ 
-    rm /var/lib/dpkg/info/libfprint-2-2*.postinst \
-    rm /var/lib/dpkg/info/libpam-fprintd*.postinst \
-    dpkg --configure -a \
-    wkhtmltopdf
+    wkhtmltopdf 
 
 WORKDIR /app
 
