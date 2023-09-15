@@ -9,16 +9,16 @@ class UserProfile(models.Model):
     address = models.TextField(null=True, blank=True)
 
     
-class Template(models.Model):
-    name = models.CharField(max_length=255)
-    html_file = models.FileField(upload_to='templates')
-    css_file = models.FileField(upload_to='templates')
+# class Template(models.Model):
+#     name = models.CharField(max_length=255)
+#     html_file = models.FileField(upload_to='templates')
+#     css_file = models.FileField(upload_to='templates')
     # preview_image = models.ImageField(upload_to='template_previews', null=True, blank=True)
 
 class Resume(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE) # sessions, id, time
     title = models.CharField(max_length=255)
-    template = models.ForeignKey(Template, on_delete=models.SET_NULL, null=True)
+    # template = models.ForeignKey(Template, on_delete=models.SET_NULL, null=True)
     creation_date = models.DateTimeField(auto_now_add=True)
     last_update_date = models.DateTimeField(auto_now=True)
 

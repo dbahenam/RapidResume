@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}User Profile{% endblock title %}
+{% block content %}
+<div>
+    <h2>User Profile</h2>
+    <p>Contact Number: {{ user.userprofile.contact_number }}</p>
+    <p>Address: {{ user.userprofile.address }}</p> 
+    <a class="btn btn-outline-success" href="{% url 'user_profile' %}?edit=true" type="button">Edit Profile</a>   
+</div>
+{% endblock content %}

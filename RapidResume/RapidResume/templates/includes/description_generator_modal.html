@@ -1,24 +1,24 @@
 <!-- initially hidden by default bootstrap settings -->
 <div class="modal fade" id="descriptionGeneratorModal" tabindex="-1" role="dialog" aria-labelledby="descriptionGeneratorModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-    <div class="modal-content">
-        <div class="modal-header">
-        <h5 class="modal-title" id="descriptionGeneratorModalLabel">Generate Description with AI</h5>
-        {% comment %} <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button> {% endcomment %}
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="descriptionGeneratorModalLabel">Generate Description with AI</h5>
+            {% comment %} <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button> {% endcomment %}
+            </div>
+            <div class="modal-body">
+            <label>{{ first_label }}</label>
+            <input type="text" id="firstInput" class="form-control">
+            <label>{{ second_label }}</label>
+            <input type="text" id="secondInput" class="form-control">
+            <!-- Add more fields as needed -->
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" id="generateDescription" class="btn btn-outline-success">Generate</button>
+            </div>
         </div>
-        <div class="modal-body">
-        <label>{{ first_label }}</label>
-        <input type="text" id="firstInput" class="form-control">
-        <label>{{ second_label }}</label>
-        <input type="text" id="secondInput" class="form-control">
-        <!-- Add more fields as needed -->
-        </div>
-        <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" id="generateDescription" class="btn btn-outline-primary">Generate</button>
-        </div>
-    </div>
     </div>
 </div>

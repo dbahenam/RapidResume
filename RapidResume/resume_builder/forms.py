@@ -3,6 +3,11 @@ from django.core.validators import RegexValidator
 
 from . import models
 
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = models.UserProfile
+        fields = ['contact_number', 'address']
+
 class PersonalDetailsForm(forms.ModelForm):
 
     class Meta:

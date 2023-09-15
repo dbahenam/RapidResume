@@ -1,38 +1,30 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Resume Builder{% endblock title %}
 {% block content %}
-<h1 class='text-center mt-3' >Choose a Template!</h1>
-<p class='text-center'>Only <a href="/personal_detail">Template</a>!</p>
-<div class="d-flex">
-    {% for template_name, template_content in template_contents.items %}
-    <div class="template-section my-2 mx-auto" id="{{ template_name }}-preview" class="template-preview" data-template-name="{{ template_name }}" >
-        <div class="single-template-item">
-            {{ template_content|safe }}
-        </div> 
-    </div>
-{% endfor %}
-</div>
-<h1 class='text-center'>Start building a <a href="/new-resume">new resume</a></h1>
-{% endblock content %}
+{% comment %} <p class='text-center'>Only <a href="/personal_detail">Template</a>!</p>
 
+<h1 class='text-center'>Start building a <a href="/new-resume">new resume</a></h1> {% endcomment %}
+{% csrf_token %}
+{% if user.is_authenticated %}
+    <h1>Welcome, {{ user.username }}!</h1>
+    {% if resumes %}
+        <p>Here's a list of your previous resumes:</p>
+        <ul>
+        {% for resume in resumes %}
+            <li>{{ resume.title }} - <a href="personal_detail">View</a></li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>You have not created any resumes yet.</p>
+    {% endif %}
+    <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#resumeTitleModal">Start a new resume</button>
+    {% include "includes/resume_title_modal.html" %}
+{% else %}
+    <!-- For unauthenticated users -->
+    <button><a href="{% url 'resume_form' %}">Start building your resume</a></button>
+{% endif %}
+{% endblock content %}
 {% block js %}
-<script>
-$(document).ready(function() {
-    $('.template-preview').click(function() {
-        var templateName = $(this).data('template-name');
-        // Now make an AJAX request to Django view to save this template name in the session
-        $.ajax({
-            type: 'POST',
-            url: '/set_template/',
-            data: {
-                'template_name': templateName,
-                'csrfmiddlewaretoken': '{{ csrf_token }}',
-            },
-            success: function(){
-                window.location.href = "/personal_detail";  // Redirect to the form filling page
-            }
-        });
-    });
-});
-</script>
+<script src="{% static 'js/resume_title.js' %}"></script>
 {% endblock js %}
