@@ -1,16 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponseNotFound
 from django.views.generic.base import View
-from django.views.generic.edit import FormView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 
-from .. import forms
-from .. import models
+from ... import forms
+from ... import models
 
-from ..decorators import check_end_status
-from ..utils.date_helpers import date_to_datestr, datestr_to_date
+from ...decorators import check_end_status
+from ...utils.date_helpers import date_to_datestr, datestr_to_date
 
-from ..constants import PROMPTS, FUNCTION_DESCRIPTIONS
+from ...constants import PROMPTS, FUNCTION_DESCRIPTIONS
 
 import os, openai, json
 
@@ -34,70 +35,85 @@ def generate_description(request, form_slug):
         # cleaned_output = SAMPLE_CHATGPT_OUTPUT
         return JsonResponse(cleaned_output)
 
-# Base FormView
 @method_decorator(check_end_status, name='dispatch')
-class BaseFormView(FormView):
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['end_status'] = self.request.session.get('end_status', False)
-        return context
-
-@method_decorator(check_end_status, name='dispatch')
-class BaseFormMixin(View):
+class BaseFormMixin(LoginRequiredMixin, View):
     def get_context_data(self, **kwargs):
         context = kwargs  # Start with provided keyword arguments
         context['end_status'] = self.request.session.get('end_status', False)
         return context
 
-class PersonalDetailView(BaseFormView):
-    # Required / Handles GET
-    form_class = forms.PersonalDetailsForm
-    template_name = 'resume_builder/personal_detail.html'
+class PersonalDetailView(BaseFormMixin):
+    def get(self, request, resume_id):
+        try:
+            resume = models.Resume.objects.get(pk=resume_id, user=request.user)
+        except models.Resume.DoesNotExist:
+            return HttpResponseNotFound("Resume not found.")
+        
+        # Try to get data if it exists, set empty form if it doesn't
+        try:
+            personal_detail = models.PersonalDetails.objects.get(resume=resume)
+            form = forms.PersonalDetailsForm(instance=personal_detail)
+        except models.PersonalDetails.DoesNotExist:
+            form = forms.PersonalDetailsForm()
 
-    # Retrieve data in session if it exists
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        personal_detail_data = self.request.session.get('personal_detail_data', None)
-        kwargs['initial'] = personal_detail_data
-        return kwargs
+        return render(request, 'resume_builder/personal_detail.html', {
+            'form': form,
+            'end_status': request.end_status,
+        })
 
-    # Required / Handles POST
-    success_url = 'education'
-    def form_valid(self, form):
-        personal_detail_data = form.cleaned_data
-        self.request.session['personal_detail_data'] = personal_detail_data
-        return super().form_valid(form)
+    def post(self, request, resume_id):
+        resume = models.Resume.objects.get(pk=resume_id, user=request.user)
+
+        # Check if data already exists for this resume
+        personal_detail, created = models.PersonalDetails.objects.get_or_create(resume=resume)
+
+        form = forms.PersonalDetailsForm(request.POST, instance=personal_detail)
+
+        if form.is_valid():
+            form.save()
+            return redirect('auth:education', resume_id=resume_id)
+        else:
+            return render(request, "resume_builder/personal_detail.html", {
+                "form": form,
+                'end_status': request.end_status
+            })
 
 class EducationView(BaseFormMixin):
-    
-    def get(self, request):
-
-        # Retrieve the data from the session if it exists
-        education_data = request.session.get('education_data', None)
-        if education_data:
-            # Convert date strings back to date objects
-            education_data['start_date'] = datestr_to_date(education_data['start_date'])
-            if education_data['end_date']:
-                education_data['end_date'] = datestr_to_date(education_data['end_date'])
-        form = forms.EducationForm(initial=education_data)
+    def get(self, request, resume_id):
+        try:
+            resume = models.Resume.objects.get(pk=resume_id, user=request.user)
+        except models.Resume.DoesNotExist:
+            return HttpResponseNotFound("Resume not found.")
+        
+        # Try to get data if it exists, set empty form if it doesn't
+        try:
+            education = models.Education.objects.get(resume=resume)
+            form = forms.EducationForm(instance=education)
+        except models.Education.DoesNotExist:
+            form = forms.EducationForm()
+        
         return render(request, 'resume_builder/education.html', {
             'form' : form,
-            'end_status' : request.end_status
+            'end_status' : request.end_status,
+            'resume_id' : resume_id
         })
-    
-    def post(self, request):
-        form = forms.EducationForm(request.POST)
+
+    def post(self, request, resume_id):
+        print(request.POST)
+        resume = models.Resume.objects.get(pk=resume_id, user=request.user)
+        print("resume: ", resume)
+        # Check if data already exists for this resume
+        education, created = models.Education.objects.get_or_create(resume=resume)
+        print("after education")
+        form = forms.EducationForm(request.POST, instance=education)
+        print(form)
         if form.is_valid():
-            education_data = form.cleaned_data
-            # Convert date objects to strings
-            education_data['start_date'] = date_to_datestr(education_data['start_date'])
-            if education_data['end_date'] != None:
-                education_data['end_date'] = date_to_datestr(education_data['end_date'])
-            request.session['education_data'] = education_data
-            return redirect("work-experience")
+            form.save()
+            return redirect('auth:work_experience', resume_id=resume_id)
         else:
-            return render(request, "resume_builder/education.html", {
-                "form" : form,
+            print(form.errors)
+            return render(request, 'resume_builder/education.html', {
+                'form' : form,
                 'end_status' : request.end_status
             })
 
@@ -132,7 +148,7 @@ class WorkExperienceView(BaseFormMixin):
                     serialized_data.append(work_experience_data)
             self.request.session['work_experience_data'] = serialized_data
             # print(self.request.session['work_experience_data'])
-            return redirect('/project')
+            return redirect('unauth:project')
         
         # If the formset isn't valid, re-render with the existing data and errors
         return render(request, self.template_name, {
@@ -171,7 +187,7 @@ class ProjectView(BaseFormMixin):
                         project_data['end_date'] = date_to_datestr(project_data['end_date'])
                     serialized_data.append(project_data)
             self.request.session['project_data'] = serialized_data
-            return redirect('/skill')
+            return redirect('unauth:skill')
         
         # If the formset isn't valid, re-render with the existing data and errors
         return render(request, self.template_name, {
@@ -206,7 +222,7 @@ class SkillView(BaseFormMixin):
                     skill_data = form.cleaned_data
                     serialized_data.append(skill_data)
             self.request.session['skill_data'] = serialized_data
-            return redirect('/certification')
+            return redirect('unauth:certification')
         
         # If the formset isn't valid, re-render with the existing data and errors
         return render(request, self.template_name, {
@@ -244,7 +260,7 @@ class CertificationView(BaseFormMixin):
                         certification_data['end_date'] = date_to_datestr(certification_data['expiration_date'])
                     serialized_data.append(certification_data)
             self.request.session['certification_data'] = serialized_data
-            return redirect('/language')
+            return redirect('unauth:language')
         
         # If the formset isn't valid, re-render with the existing data and errors
         print(formset.errors)
@@ -279,7 +295,7 @@ class LanguageView(BaseFormMixin):
                     language_data = form.cleaned_data
                     serialized_data.append(language_data)
             self.request.session['language_data'] = serialized_data
-            return redirect('/resume_preview')
+            return redirect('resume_builder:preview_resume') 
         
         # If the formset isn't valid, re-render with the existing data and errors
         return render(request, self.template_name, {

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container mt-3 text-center" style="width:95%;">
-  <h1 class="mt-5">Start Building Your <a href="/builder">Resume</a>!</h1>
+  <h1 class="mt-5">Start Building Your <a href="{% url 'resume_builder:resume_dashboard' %}">Resume</a>!</h1>
 </div>
 {% endblock content %}
 

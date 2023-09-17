@@ -12,7 +12,7 @@
         <p>Here's a list of your previous resumes:</p>
         <ul>
         {% for resume in resumes %}
-            <li>{{ resume.title }} - <a href="personal_detail">View</a></li>
+            <li>{{ resume.title }} - <a href="{% url 'auth:personal_detail' resume.id %}">View</a></li>
         {% endfor %}
         </ul>
     {% else %}
@@ -22,7 +22,9 @@
     {% include "includes/resume_title_modal.html" %}
 {% else %}
     <!-- For unauthenticated users -->
-    <button><a href="{% url 'resume_form' %}">Start building your resume</a></button>
+    <div class="text-center">
+        <a type="button" class="btn btn-outline-success" href="{% url 'unauth:personal_detail' %}">Start building your resume</a>
+    </div>
 {% endif %}
 {% endblock content %}
 {% block js %}

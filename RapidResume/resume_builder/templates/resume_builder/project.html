@@ -42,12 +42,15 @@
 
         <div class="d-flex justify-content-between flex-wrap">
             <div>
-                <a href="work-experience" type="button" class="btn btn-outline-secondary mt-3 mr-2" style="width:auto; font-weight:bold">Back</a>
-                <button type="submit" class="btn btn-outline-success mt-3" style="width:auto; font-weight:bold">Next</button>
+                <a href="{% if request.user.is_authenticated %}{% url 'auth:work_experience' %}{% else %}{% url 'unauth:work_experience' %}{% endif %}" 
+                type="button" 
+                class="btn btn-outline-secondary" 
+                style="width:auto; font-weight:bold">Back</a>
+                <button type="submit" class="btn btn-outline-success m-3" style="width:auto; font-weight:bold">Next</button>
             </div>
             {% if end_status %}
             <div>
-                <a href="resume_preview" type="button" class="btn btn-outline-warning mt-3" style="width:auto; font-weight:bold">Review</a>
+                <a href="{% url 'resume_builder:preview_resume' %}" type="button" class="btn btn-outline-warning mt-3" style="width:auto; font-weight:bold">Review</a>
             </div>
             {% endif %}
         </div> 

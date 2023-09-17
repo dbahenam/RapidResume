@@ -31,12 +31,15 @@
         
         <div class="d-flex m-1">
             <div>
-                <a href="project" type="button" class="btn btn-outline-secondary m-3" style="width:auto; font-weight:bold">Back</a>
+                <a href="{% if request.user.is_authenticated %}{% url 'auth:project' %}{% else %}{% url 'unauth:project' %}{% endif %}" 
+                type="button" 
+                class="btn btn-outline-secondary" 
+                style="width:auto; font-weight:bold">Back</a>                
                 <button type="submit" class="btn btn-outline-success m-3" style="width:auto; font-weight:bold">Next</button>
             </div>
             {% if end_status %}
             <div>
-                <a href="resume_preview" type="button" class="btn btn-outline-warning m-3" style="width:auto; font-weight:bold">Review</a>
+                <a href="{% url 'resume_builder:preview_resume' %}" type="button" class="btn btn-outline-warning m-3" style="width:auto; font-weight:bold">Review</a>
             </div>
             {% endif %}
         </div>
