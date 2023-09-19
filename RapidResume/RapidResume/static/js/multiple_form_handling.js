@@ -9,7 +9,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Find the current form count
             const formCountInput = document.querySelector('#id_form-TOTAL_FORMS');
-            let prevFormCount = parseInt(formCountInput.value);
+            let prevFormCount = parseInt(formCountInput.value) - 1;
+            console.log(prevFormCount)
 
             // Update form count
             let updatedFormCount = prevFormCount + 1;

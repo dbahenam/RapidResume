@@ -12,5 +12,4 @@ urlpatterns = [
     path("certification", unauth_form_views.CertificationView.as_view(), name="certification"),
     path("project", unauth_form_views.ProjectView.as_view(), name="project"),
     path("language", unauth_form_views.LanguageView.as_view(), name="language"),
-    path('generate_description_endpoint/<slug:form_slug>', unauth_form_views.generate_description, name="get_auto_description"),
 ]

@@ -20,6 +20,7 @@
             {{formset.management_form}}
             {% for form in formset%}
                 <div class="django-formset-form">
+                    {{ form.id }}
                     <div class="row">
                         <div class="col-6"> {{form.company_name|as_crispy_field}} </div>
                         <div class="col-6"> {{form.location|as_crispy_field}} </div>
@@ -31,7 +32,7 @@
                     </div> 
                     <div>
                         {{ form.description|as_crispy_field }}
-                        <button data-form-index="{{ forloop.counter0}}"  type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#descriptionGeneratorModal">
+                        <button data-form-index="{{ forloop.counter0 }}"  type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#descriptionGeneratorModal">
                             Generate Description with AI
                         </button>
                     </div>
@@ -46,7 +47,7 @@
 
         <div class="d-flex justify-content-between flex-wrap">
             <div>
-                <a href="{% if request.user.is_authenticated %}{% url 'auth:education' %}{% else %}{% url 'unauth:education' %}{% endif %}" 
+                <a href="{% if request.user.is_authenticated %}{% url 'auth:education' resume_id %}{% else %}{% url 'unauth:education' %}{% endif %}" 
                 type="button" 
                 class="btn btn-outline-secondary" 
                 style="width:auto; font-weight:bold">Back</a>

@@ -31,7 +31,7 @@
         
         <div class="d-flex m-1">
             <div>
-                <a href="{% if request.user.is_authenticated %}{% url 'auth:project' %}{% else %}{% url 'unauth:project' %}{% endif %}" 
+                <a href="{% if request.user.is_authenticated %}{% url 'auth:project' resume_id %}{% else %}{% url 'unauth:project' %}{% endif %}" 
                 type="button" 
                 class="btn btn-outline-secondary" 
                 style="width:auto; font-weight:bold">Back</a>                
