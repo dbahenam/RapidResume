@@ -9,7 +9,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Find the current form count
             const formCountInput = document.querySelector('#id_form-TOTAL_FORMS');
-            let prevFormCount = parseInt(formCountInput.value) - 1;
+            let prevFormCount = parseInt(formCountInput.value);
+            if (prevFormCount !== 0) { prevFormCount--;}
             console.log(prevFormCount)
 
             // Update form count
@@ -17,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Clean cloned form from previous inputs
             clonedForm.querySelectorAll('input, select, textarea').forEach(input => {
+                console.log(input)
                 input.name = input.name.replace('-' + prevFormCount + '-', '-' + updatedFormCount + '-');
                 input.id = input.id.replace('-' + prevFormCount + '-', '-' + updatedFormCount + '-');
 
@@ -24,6 +26,17 @@ document.addEventListener('DOMContentLoaded', function () {
                     input.value = ''; // clear input values
                 }
             });
+
+            clonedForm.querySelectorAll('label').forEach(label => {
+                label.htmlFor = label.htmlFor.replace('-' + prevFormCount + '-', '-' + updatedFormCount + '-');
+            });
+
+            // After cloning the form, remove the id input field from the cloned form
+            const idInput = clonedForm.querySelector('input[name*="-id"]');
+            if (idInput) {
+                idInput.remove();
+            }
+
 
             const generateDescriptionButton = clonedForm.querySelector('[data-form-index]');
             if (generateDescriptionButton) {

@@ -21,6 +21,7 @@
             {{formset.management_form}}
             {% for form in formset%}
                 <div class="django-formset-form">
+                    {{ form.id }}
                     <div class="row">
                         <div class="col-6"> {{form.name|as_crispy_field}} </div>
                         <div class="col-6"> {{form.issuing_org|as_crispy_field}} </div>
@@ -40,10 +41,11 @@
         
         <div class="d-flex justify-content-between flex-wrap">
             <div>
-                <a href="{% if request.user.is_authenticated %}{% url 'auth:skill' %}{% else %}{% url 'unauth:skill' %}{% endif %}" 
+                <a href="{% if request.user.is_authenticated %}{% url 'auth:skill' resume_id %}{% else %}{% url 'unauth:skill' %}{% endif %}" 
                 type="button" 
                 class="btn btn-outline-secondary" 
-                style="width:auto; font-weight:bold">Back</a>                  <button type="submit" class="btn btn-outline-success m-3" style="width:auto; font-weight:bold">Next</button>
+                style="width:auto; font-weight:bold">Back</a>                  
+                <button type="submit" class="btn btn-outline-success m-3" style="width:auto; font-weight:bold">Next</button>
             </div>
             {% if end_status %}
             <div>

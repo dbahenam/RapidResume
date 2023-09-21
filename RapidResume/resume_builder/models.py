@@ -52,6 +52,9 @@ class WorkExperience(models.Model):
     end_date = models.DateField(null=True, blank=True)
     description = models.TextField(null=True, blank=True) # makemigrations, migrate
 
+    def __str__(self):
+        return f"{self.company_name} - {self.job_title}"
+
 class Project(models.Model):
     resume = models.ForeignKey(Resume, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)

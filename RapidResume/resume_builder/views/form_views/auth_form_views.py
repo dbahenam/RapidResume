@@ -115,26 +115,15 @@ class WorkExperienceView(BaseFormMixin):
 
         # Get previous inputs for this resume related to form
         work_experiences = models.WorkExperience.objects.filter(resume=resume)
-        # If no work_experiences, create an unsaved one for display.
-        if not work_experiences.exists():
-            new_work_experience = models.WorkExperience(resume=resume)
-            work_experiences = [new_work_experience]
-            extra_forms = 1  # This ensures one empty form is created.
-        else:
-            work_experiences = list(work_experiences)
-            extra_forms = 0  # No extra empty forms when there are existing work_experiences.
-        # if not work_experiences.exists():
-        #     # Create a new unsaved WorkExperience instance
-        #     new_work_experience = models.WorkExperience(resume=resume)
-        #     # Create a new queryset containing the new instance
-        #     work_experiences = models.WorkExperience.objects.filter(pk__in=[None])
-        #     work_experiences._result_cache = [new_work_experience]
-        # formset = forms.WorkExperienceFormSet(queryset=work_experiences)
-        WorkExperienceFormSet = modelformset_factory(models.WorkExperience, form=forms.WorkExperienceForm, extra=extra_forms)
-        formset = WorkExperienceFormSet(queryset=models.WorkExperience.objects.filter(pk__in=[w.pk for w in work_experiences]))
+
+        # If empty display empty form, else display existing records
+        extra_forms =  0 if work_experiences.exists() else 1
+        forms.WorkExperienceFormSet.extra = extra_forms
+
+        formset = forms.WorkExperienceFormSet(queryset=work_experiences)
 
         return render(request, self.template_name, {
-            'formset': formset,
+            'formset' : formset,
             'end_status': request.end_status,
             'resume_id' : resume_id,
         })
@@ -146,19 +135,21 @@ class WorkExperienceView(BaseFormMixin):
 
         # Get associated forms
         work_experiences = models.WorkExperience.objects.filter(resume=resume)
-        formset = forms.WorkExperienceFormSet(request.POST, queryset=work_experiences)
 
-        # print(formset)
+        # Filter out completely empty forms
+        formset = forms.WorkExperienceFormSet(request.POST, queryset=work_experiences) # Initially a QueryDict
+        formset.data = formset.data.copy() # Make the data mutable
+        cleaned_forms = [form for form in formset if any(field.value() for field in form)]
+        formset.data['form-TOTAL_FORMS'] = len(cleaned_forms)
 
-        if formset.is_valid():
-            # Using formsets makes this convenient -- it can create/update/delete instances
-            instances = formset.save(commit=False)
-            for instance in instances:
-                instance.resume = resume  # setting foreign key relationship
-                instance.save()
-            
+        if formset.is_valid(): 
+            for form in formset:
+                if form.has_changed(): # Avoid saving empty forms
+                    instance = form.save(commit=False)
+                    instance.resume = resume
+                    instance.save()
             return redirect('auth:project', resume_id=resume_id)
-
+        
         # If the formset isn't valid, re-render with the existing data and errors
         return render(request, self.template_name, {
             'formset': formset,
@@ -176,14 +167,12 @@ class ProjectView(BaseFormMixin):
 
         # Get associated forms
         projects = models.Project.objects.filter(resume=resume)
-        if not projects.exists():
-            # Create an empty form
-            empty_form = forms.ProjectForm()
-            # Create a formset with the empty form
-            formset = forms.ProjectFormSet(queryset=projects)
-            formset.forms.append(empty_form)
-        else:
-            formset = forms.ProjectFormSet(queryset=projects)
+
+        # If empty display empty form, else display existing records
+        extra_forms = 0 if projects.exists() else 1
+        forms.ProjectFormSet.extra = extra_forms
+
+        formset = forms.ProjectFormSet(queryset=projects)
 
         return render(request, self.template_name, {
             'formset': formset,
@@ -194,18 +183,23 @@ class ProjectView(BaseFormMixin):
     def post(self, request, resume_id):
 
         # Get associated resume
-        resume = models.Resume.objects.get(resume=resume_id)
+        resume = models.Resume.objects.get(pk=resume_id, user=request.user)
 
         # Get associated forms
         projects = models.Project.objects.filter(resume=resume)
-        formset = forms.ProjectFormSet(queryset=projects)
+
+        # Filter out completely empty forms
+        formset = forms.ProjectFormSet(request.POST, queryset=projects) # Initially a QueryDict
+        formset.data = formset.data.copy() # Make the data mutable
+        cleaned_forms = [form for form in formset if any(field.value() for field in form)] # Count non-empty forms
+        formset.data['form-TOTAL_FORMS'] = len(cleaned_forms)
 
         if formset.is_valid():
-            instances = formset.save(commit=False)
-            for instance in instances:
-                instance.resume = resume
-                instance.save()
-            
+            for form in formset:
+                if form.has_changed():
+                    instance = form.save(commit=False)
+                    instance.resume = resume
+                    instance.save()
             return redirect('auth:skill', resume_id=resume_id)
         
         # If the formset isn't valid
@@ -218,106 +212,154 @@ class ProjectView(BaseFormMixin):
 class SkillView(BaseFormMixin):
     template_name = 'resume_builder/skill.html'
 
-    def get(self, request):
-        skill_data = self.request.session.get('skill_data', [])
-        if isinstance(skill_data, dict):
-            skill_data = [skill_data]
+    def get(self, request, resume_id):
         
-        # Create formset with the data from the session, or empty if there's none
-        formset = forms.SkillFormSet(initial=skill_data)
+        # Get associated resume
+        resume = models.Resume.objects.get(pk=resume_id, user=request.user)
+
+        # Get associated forms
+        skills = models.Skill.objects.filter(resume=resume)
+        
+        # If empty display empty form, else display existing records
+        extra_forms = 0 if skills.exists() else 1
+        forms.SkillFormSet.extra = extra_forms
+
+        formset = forms.SkillFormSet(queryset=skills)
         
         return render(request, self.template_name, {
             'formset': formset,
-            'end_status': request.end_status
+            'end_status': request.end_status,
+            'resume_id' : resume_id
         })
 
-    def post(self, request):
-        formset = forms.SkillFormSet(request.POST)
+    def post(self, request, resume_id):
 
+        # Get associated resume
+        resume = models.Resume.objects.get(pk=resume_id, user=request.user)
+
+        # Get associated forms
+        skills = models.Skill.objects.filter(resume=resume)
+
+        # Filter out completely empty forms
+        formset = forms.SkillFormSet(request.POST, queryset=skills)
+        formset.data = formset.data.copy() 
+        cleaned_forms = [form for form in formset if any(field.value() for field in form)]
+        formset.data['form-TOTAL_FORMS'] = len(cleaned_forms)
+        
         if formset.is_valid():
-            serialized_data = []
             for form in formset:
-                if form.has_changed():  # This will be False for empty forms
-                    skill_data = form.cleaned_data
-                    serialized_data.append(skill_data)
-            self.request.session['skill_data'] = serialized_data
-            return redirect('unauth:certification')
+                if form.has_changed():
+                    instance = form.save(commit=False)
+                    instance.resume = resume
+                    instance.save()
+            return redirect('auth:certification', resume_id=resume_id)
         
         # If the formset isn't valid, re-render with the existing data and errors
         return render(request, self.template_name, {
             'formset': formset,
-            'end_status': request.end_status
+            'end_status': request.end_status,
+            'resume_id' : resume_id
         })
     
 class CertificationView(BaseFormMixin):
     template_name = "resume_builder/certification.html"
 
-    def get(self, request):
-        certification_data = self.request.session.get('certification_data', [])
-        print("cert data: ", certification_data)
-        if isinstance(certification_data, dict):
-            certification_data = [certification_data]
-        
-        # Create formset with the data from the session, or empty if there's none
-        formset = forms.CertificationFormSet(initial=certification_data)
+    def get(self, request, resume_id):
+        # Get associated resume
+        resume = models.Resume.objects.get(pk=resume_id, user=request.user)
+
+        # Get associated forms
+        certifications = models.Certification.objects.filter(resume=resume)
+
+        # If empty display empty form, else display existing records
+        extra_forms = 0 if certifications.exists() else 1
+        forms.CertificationFormSet.extra = extra_forms
+
+        formset = forms.CertificationFormSet(queryset=certifications)
 
         return render(request, self.template_name, {
             'formset': formset,
-            'end_status': request.end_status
+            'end_status': request.end_status,
+            'resume_id' : resume_id
         })
 
-    def post(self, request):
-        formset = forms.CertificationFormSet(request.POST)
+    def post(self, request, resume_id):
+        # Get associated resume
+        resume = models.Resume.objects.get(pk=resume_id, user=request.user)
+
+        # Get associated forms
+        certifications = models.Certification.objects.filter(resume=resume)
+
+        # Filter out completely empty forms
+        formset = forms.CertificationFormSet(request.POST, queryset=certifications) # Initially a QueryDict
+        formset.data = formset.data.copy() # Make the data mutable
+        cleaned_forms = [form for form in formset if any(field.value() for field in form)] # Count non-empty forms
+        formset.data['form-TOTAL_FORMS'] = len(cleaned_forms)
+
+        print(formset)
 
         if formset.is_valid():
-            serialized_data = []
             for form in formset:
                 if form.has_changed():
-                    certification_data = form.cleaned_data
-                    certification_data['date_issued'] = date_to_datestr(certification_data['date_issued'])
-                    if certification_data['expiration_date']:
-                        certification_data['end_date'] = date_to_datestr(certification_data['expiration_date'])
-                    serialized_data.append(certification_data)
-            self.request.session['certification_data'] = serialized_data
-            return redirect('unauth:language')
+                    instance = form.save(commit=False)
+                    instance.resume = resume
+                    instance.save()
+            return redirect('auth:language', resume_id=resume_id)
         
-        # If the formset isn't valid, re-render with the existing data and errors
         print(formset.errors)
+        
         return render(request, self.template_name, {
             'formset': formset,
-            'end_status': request.end_status
+            'end_status': request.end_status,
+            'resume_id' : resume_id
         })
 
 class LanguageView(BaseFormMixin):
     template_name = 'resume_builder/language.html'
 
-    def get(self, request):
-        language_data = self.request.session.get('language_data', [])
-        if isinstance(language_data, dict):
-            language_data = [language_data]
-        
-        # Create formset with the data from the session, or empty if there's none
-        formset = forms.LanguageFormSet(initial=language_data)
+    # Get associated resume
+    def get(self, request, resume_id):
+        resume = models.Resume.objects.get(pk=resume_id, user=request.user)
+
+        # Get associated forms
+        languages = models.Language.objects.filter(resume=resume)
+
+        # If empty display empty form, else display existing records
+        extra_forms = 0 if languages.exists() else 1
+        forms.LanguageFormSet.extra = extra_forms
+
+        formset = forms.LanguageFormSet(queryset=languages)
 
         return render(request, self.template_name, {
             'formset': formset,
-            'end_status': request.end_status
+            'end_status': request.end_status,
+            'resume_id' : resume_id,
         })
 
-    def post(self, request):
-        formset = forms.LanguageFormSet(request.POST)
+    def post(self, request, resume_id):
+        # Get associated resume
+        resume = models.Resume.objects.get(pk=resume_id, user=request.user)
+
+        # Get associated forms
+        languages = models.Language.objects.filter(resume=resume)
+
+        # Filter out completely empty forms
+        formset = forms.LanguageFormSet(request.POST, queryset=languages) # Initially a QueryDict
+        formset.data = formset.data.copy() # Make the data mutable
+        cleaned_forms = [form for form in formset if any(field.value() for field in form)] # Count non-empty forms
+        formset.data['form-TOTAL_FORMS'] = len(cleaned_forms)
 
         if formset.is_valid():
-            serialized_data = []
             for form in formset:
                 if form.has_changed():
-                    language_data = form.cleaned_data
-                    serialized_data.append(language_data)
-            self.request.session['language_data'] = serialized_data
-            return redirect('resume_builder:preview_resume') 
+                    instance = form.save(commit=False)
+                    instance.resume = resume
+                    instance.save()
+            return redirect('auth:language', resume_id=resume_id)
         
         # If the formset isn't valid, re-render with the existing data and errors
         return render(request, self.template_name, {
             'formset': formset,
-            'end_status': request.end_status
+            'end_status': request.end_status,
+            'resume_id' : resume_id
         })
