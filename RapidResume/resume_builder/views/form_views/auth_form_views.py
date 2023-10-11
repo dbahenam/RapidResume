@@ -37,6 +37,7 @@ class PersonalDetailView(BaseFormMixin):
         return render(request, 'resume_builder/personal_detail.html', {
             'form': form,
             'end_status': request.end_status,
+            'resume_id' : resume_id
         })
 
     def post(self, request, resume_id):
@@ -53,7 +54,8 @@ class PersonalDetailView(BaseFormMixin):
         else:
             return render(request, "resume_builder/personal_detail.html", {
                 "form": form,
-                'end_status': request.end_status
+                'end_status': request.end_status,
+                'resume_id' : resume_id
             })
 
 class EducationView(BaseFormMixin):
@@ -355,7 +357,7 @@ class LanguageView(BaseFormMixin):
                     instance = form.save(commit=False)
                     instance.resume = resume
                     instance.save()
-            return redirect('auth:language', resume_id=resume_id)
+            return redirect('resume_builder:auth_preview', resume_id=resume_id)
         
         # If the formset isn't valid, re-render with the existing data and errors
         return render(request, self.template_name, {

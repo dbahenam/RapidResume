@@ -8,13 +8,6 @@ class UserProfile(models.Model):
     contact_number = models.CharField(max_length=15, null=True, blank=True)
     address = models.TextField(null=True, blank=True)
 
-    
-# class Template(models.Model):
-#     name = models.CharField(max_length=255)
-#     html_file = models.FileField(upload_to='templates')
-#     css_file = models.FileField(upload_to='templates')
-    # preview_image = models.ImageField(upload_to='template_previews', null=True, blank=True)
-
 class Resume(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE) # sessions, id, time
     title = models.CharField(max_length=255)
@@ -23,7 +16,7 @@ class Resume(models.Model):
     last_update_date = models.DateTimeField(auto_now=True)
 
 class PersonalDetails(models.Model):
-    resume = models.ForeignKey(Resume, on_delete=models.CASCADE)
+    resume = models.OneToOneField(Resume, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     email = models.EmailField(max_length=254)

@@ -181,7 +181,7 @@
       <div class="text-center">
         <p>
           <strong
-            ><span class="smallcaps"><h1>{{personal_detail_data.first_name}} {{personal_detail_data.last_name}}</h1></span></strong
+            ><span class="smallcaps"><h1>{{resume_data.personaldetails.first_name}} {{resume_data.personaldetails.last_name}}</h1></span></strong
           ><br />
           123-456-7890 <span class="math inline">|</span>
           <a href="mailto:x@x.com"><u>jake@su.edu</u></a>
@@ -194,25 +194,31 @@
     </div>
     <h3 id="education">Education</h3>
     <ul>
+      {% for education in resume_data.education_set.all%}
       <li>
         <table>
           <tbody>
             <tr class="odd">
               <td style="text-align: left">
-                <strong>{{education_data.school_name}}</strong>
+                <strong>{{education.school_name}}</strong>
+                <span>- {{education.degree}}</span
               </td>
-              <td style="text-align: right">San Diego, CA</td>
+              <td style="text-align: right"><em>{{education.start_date}}</em></td>
+              {% comment %} <td style="text-align: right">San Diego, CA</td> {% endcomment %}
             </tr>
-            <tr class="even">
+            {% comment %} <tr class="even">
               <td style="text-align: left">
                 <em>{{education_data.degree}}</em>
               </td>
-              <td style="text-align: right"><em>{{education_data.start_date}}</em></td>
-            </tr> 
+              <td style="text-align: right"><em>{{education.start_date}}</em></td>
+            </tr>  {% endcomment %}
           </tbody>
         </table>
       </li>
-      {% comment %} <li>
+      {% endfor %}
+    
+      {% comment %} 
+      <li>
         <table>
           <tbody>
             <tr class="odd">        
@@ -227,7 +233,8 @@
             </tr>
           </tbody>
         </table>
-      </li> {% endcomment %}
+      </li> 
+      {% endcomment %}
     </ul>
     <h3 id="experience">Experience</h3>
     <ul>

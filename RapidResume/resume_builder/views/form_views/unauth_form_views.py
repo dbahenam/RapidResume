@@ -115,6 +115,7 @@ class ProjectView(BaseFormMixin):
     # Retrieve data in session if it exists
     def get(self, request):
         project_data = self.request.session.get('project_data', [])
+        print(project_data)
         if isinstance(project_data, dict): # Remove later
             project_data = [project_data]
         
@@ -247,7 +248,7 @@ class LanguageView(BaseFormMixin):
                     language_data = form.cleaned_data
                     serialized_data.append(language_data)
             self.request.session['language_data'] = serialized_data
-            return redirect('resume_builder:preview_resume') 
+            return redirect('resume_builder:unauth_preview') 
         
         # If the formset isn't valid, re-render with the existing data and errors
         return render(request, self.template_name, {

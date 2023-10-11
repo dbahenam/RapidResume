@@ -31,7 +31,7 @@
             </div>
             {% if end_status %}
             <div>
-                <a href="resume_preview" type="button" class="btn btn-outline-warning m-3" style="width:auto; font-weight:bold">Review</a>
+                <a href="{% if request.user.is_authenticated %}{% url 'resume_builder:auth_preview' resume_id %}{% else %}{% url 'resume_builder:unauth_preview' %} {% endif %}" type="button" class="btn btn-outline-warning" style="width:auto; font-weight:bold">Review</a>
             </div>
             {% endif %}
         </div>

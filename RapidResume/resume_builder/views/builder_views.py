@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404
 import json 
 
 from ..models import Resume
@@ -24,10 +25,28 @@ def create_new_resume(request):
     else:
         return JsonResponse({'status': 'error', 'message': 'Unauthenticated User'})
 
-def preview_resume(request):
+def resume_preview(request, resume_id=None):
     request.session['end_status'] = True
-    print(request.session.items())
-    context = dict(request.session.items())
-    # return render(request, 'resume_template.html', context)
-    return render(request, 'resume_builder/resume_preview.html')
+    print(dict(request.session.items()))
+    if resume_id:
+        resume_data = get_object_or_404(Resume.objects.prefetch_related(
+            'personaldetails',
+            'education_set',
+            'workexperience_set',
+            'project_set',
+            'skill_set',
+            'certification_set',
+            'language_set',
+        ), pk=resume_id, user=request.user)
+        print(vars(resume_data))
+        return render(request, 'resume_builder/resume_preview.html', {
+            'resume_id':resume_id,
+            'resume_data': resume_data
+        })
+    else:
+        resume_data = dict(request.session.items())
+        print(resume_data)
+        return render(request, 'resume_builder/resume_preview.html', {
+            'resume_data': resume_data
+        })
 

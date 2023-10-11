@@ -7,5 +7,6 @@ app_name = 'resume_builder'
 urlpatterns = [
     path("dashboard", builder_views.resume_dashboard, name="resume_dashboard"),
     path("create", builder_views.create_new_resume, name="create_new_resume"),
-    path("preview", builder_views.preview_resume, name="preview_resume"),
+    path("preview", builder_views.resume_preview, name="unauth_preview"),
+    path("preview/<int:resume_id>", builder_views.resume_preview, name="auth_preview"),
 ]

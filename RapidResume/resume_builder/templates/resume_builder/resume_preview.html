@@ -3,12 +3,13 @@
 {% block content %}
 <h1 class="text-center mt-3">Resume Preview</h1>
 <ul class="list-group m-5">
-    <li class="list-group-item"><a href="{% if request.user.is_authenticated %}{% url 'auth:education' %}{% else %}{% url 'unauth:education' %}{% endif %}" >Education</a></li>
-    <li class="list-group-item"><a href="{% if request.user.is_authenticated %}{% url 'auth:work_experience' %}{% else %}{% url 'unauth:work_experience' %}{% endif %}" >Work Experience</a></li>
-    <li class="list-group-item"><a href="{% if request.user.is_authenticated %}{% url 'auth:skill' %}{% else %}{% url 'unauth:skill' %}{% endif %}" >Skills</a></li>
-    <li class="list-group-item"><a href="{% if request.user.is_authenticated %}{% url 'auth:certification' %}{% else %}{% url 'unauth:certification' %}{% endif %}" >Certifications</a></li>
-    <li class="list-group-item"><a href="{% if request.user.is_authenticated %}{% url 'auth:project' %}{% else %}{% url 'unauth:project' %}{% endif %}" >Projects</a></li>
-    <li class="list-group-item"><a href="{% if request.user.is_authenticated %}{% url 'auth:languaget_digit' %}{% else %}{% url 'unauth:language' %}{% endif %}" >Languages</a></li>
+    <li class="list-group-item"><a href="{% if request.user.is_authenticated %}{% url 'auth:education' resume_id%}{% else %}{% url 'unauth:education' %}{% endif %}" >Education</a></li>
+    <li class="list-group-item"><a href="{% if request.user.is_authenticated %}{% url 'auth:work_experience' resume_id%}{% else %}{% url 'unauth:work_experience' %}{% endif %}" >Work Experience</a></li>
+    <li class="list-group-item"><a href="{% if request.user.is_authenticated %}{% url 'auth:skill' resume_id%}{% else %}{% url 'unauth:skill' %}{% endif %}" >Skills</a></li>
+    <li class="list-group-item"><a href="{% if request.user.is_authenticated %}{% url 'auth:certification' resume_id%}{% else %}{% url 'unauth:certification' %}{% endif %}" >Certifications</a></li>
+    <li class="list-group-item"><a href="{% if request.user.is_authenticated %}{% url 'auth:project' resume_id%}{% else %}{% url 'unauth:project' %}{% endif %}" >Projects</a></li>
+    <li class="list-group-item"><a href="{% if request.user.is_authenticated %}{% url 'auth:language' resume_id%}{% else %}{% url 'unauth:language' %}{% endif %}" >Languages</a></li>
 </ul>
-<h3 class="text-center">Generate Your <a href="start-build">RESUME</a></h3>
+{% include "includes/resume_body.html" %}
+{% comment %} <a href="{% url 'download_resume_pdf' %}" class="btn btn-primary">Download Resume as PDF</a> {% endcomment %}
 {% endblock content %}

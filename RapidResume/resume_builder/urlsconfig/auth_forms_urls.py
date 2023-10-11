@@ -1,5 +1,6 @@
 from django.urls import path, include
 from ..views.form_views import auth_form_views
+from ..views import builder_views
 
 app_name = 'auth'
 
