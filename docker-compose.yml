@@ -8,3 +8,8 @@ services:
       - 8000:8000 # host : container
     volumes: # Map hard drive from host (computer) to drive in container
       - ./RapidResume:/app
+  
+  redis:
+    image: "redis:latest"
+    ports:
+      - "6379:6379"
