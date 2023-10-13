@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.urls import reverse
 from django.http import JsonResponse
+from django.core.cache import cache
 from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404
 import json 
@@ -27,18 +28,24 @@ def create_new_resume(request):
 
 def resume_preview(request, resume_id=None):
     request.session['end_status'] = True
-    print(dict(request.session.items()))
     if resume_id:
-        resume_data = get_object_or_404(Resume.objects.prefetch_related(
-            'personaldetails',
-            'education_set',
-            'workexperience_set',
-            'project_set',
-            'skill_set',
-            'certification_set',
-            'language_set',
-        ), pk=resume_id, user=request.user)
-        print(vars(resume_data))
+        cache_key = f"resume_{resume_id}"
+        cached_resume = cache.get(cache_key)
+        # print(vars(cache.get(cache_key)))
+        if not cached_resume:
+            resume_data = get_object_or_404(Resume.objects.prefetch_related(
+                'personaldetails',
+                'education_set',
+                'workexperience_set',
+                'project_set',
+                'skill_set',
+                'certification_set',
+                'language_set',
+            ), pk=resume_id, user=request.user)
+            cache.set(cache_key, resume_data, 1800)  # cache for 30 minutes
+        else:
+            resume_data = cached_resume
+
         return render(request, 'resume_builder/resume_preview.html', {
             'resume_id':resume_id,
             'resume_data': resume_data

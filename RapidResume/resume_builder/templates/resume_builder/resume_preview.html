@@ -11,5 +11,9 @@
     <li class="list-group-item"><a href="{% if request.user.is_authenticated %}{% url 'auth:language' resume_id%}{% else %}{% url 'unauth:language' %}{% endif %}" >Languages</a></li>
 </ul>
 {% include "includes/resume_body.html" %}
+<div class="text-center">
+    <a href="{% if request.user.is_authenticated %}{% url "pdfs:auth_download" resume_id %}{% else %}{% url 'pdfs:unauth:download' %}{% endif %}" class="m-1 btn btn-primary">Download Resume as PDF</a>
+</div>
+
 {% comment %} <a href="{% url 'download_resume_pdf' %}" class="btn btn-primary">Download Resume as PDF</a> {% endcomment %}
 {% endblock content %}

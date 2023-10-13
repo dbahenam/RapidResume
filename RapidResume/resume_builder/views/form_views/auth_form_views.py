@@ -9,7 +9,7 @@ from ... import forms
 from ... import models
 
 from ...decorators import check_end_status
-from ...utils.date_helpers import date_to_datestr, datestr_to_date
+from ...utils.pdf_helpers import clear_resume_cache
 
 
 
@@ -147,6 +147,7 @@ class WorkExperienceView(BaseFormMixin):
         if formset.is_valid(): 
             for form in formset:
                 if form.has_changed(): # Avoid saving empty forms
+                    clear_resume_cache(resume_id)
                     instance = form.save(commit=False)
                     instance.resume = resume
                     instance.save()
@@ -199,6 +200,7 @@ class ProjectView(BaseFormMixin):
         if formset.is_valid():
             for form in formset:
                 if form.has_changed():
+                    clear_resume_cache(resume_id)
                     instance = form.save(commit=False)
                     instance.resume = resume
                     instance.save()
@@ -251,6 +253,7 @@ class SkillView(BaseFormMixin):
         if formset.is_valid():
             for form in formset:
                 if form.has_changed():
+                    clear_resume_cache(resume_id)
                     instance = form.save(commit=False)
                     instance.resume = resume
                     instance.save()
@@ -303,6 +306,7 @@ class CertificationView(BaseFormMixin):
         if formset.is_valid():
             for form in formset:
                 if form.has_changed():
+                    clear_resume_cache(resume_id)
                     instance = form.save(commit=False)
                     instance.resume = resume
                     instance.save()
@@ -354,6 +358,7 @@ class LanguageView(BaseFormMixin):
         if formset.is_valid():
             for form in formset:
                 if form.has_changed():
+                    clear_resume_cache(resume_id)
                     instance = form.save(commit=False)
                     instance.resume = resume
                     instance.save()

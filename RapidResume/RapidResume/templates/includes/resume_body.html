@@ -15,8 +15,6 @@
     overflow-wrap: break-word;
     text-rendering: optimizeLegibility;
     font-kerning: normal;
-
-
   }
 
   table{
@@ -203,7 +201,7 @@
                 <strong>{{education.school_name}}</strong>
                 <span>- {{education.degree}}</span
               </td>
-              <td style="text-align: right"><em>{{education.start_date}}</em></td>
+              <td style="text-align: right">{{education.start_date}}</td>
               {% comment %} <td style="text-align: right">San Diego, CA</td> {% endcomment %}
             </tr>
             {% comment %} <tr class="even">
@@ -241,7 +239,7 @@
       <li>
         <table>
           <tbody>
-            {% for work_experience in work_experience_data%}
+            {% for work_experience in resume_data.workexperience_set.all%}
             <tr class="odd">
               <td style="text-align: left">
                 <strong>{{work_experience.job_title}}</strong>
@@ -249,8 +247,8 @@
               <td style="text-align: right">{{work_experience.start_date}}{% if work_experience.end_date %} - {{work_experience.end_date}}{% endif %}</td>
             </tr>
             <tr class="even">
-              <td style="text-align: left"><em>{{work_experience.company_name}}</em></td>
-              <td style="text-align: right"><em>{{work_experience.location}}</em></td>
+              <td style="text-align: left">{{work_experience.company_name}}</td>
+              <td style="text-align: right">{{work_experience.location}}</td>
             </tr>
             {% endfor %}
           </tbody>

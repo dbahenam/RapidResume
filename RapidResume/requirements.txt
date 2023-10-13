@@ -59,3 +59,4 @@ webencodings==0.5.1
 xhtml2pdf==0.2.11
 yarl==1.9.2
 zopfli==0.2.2
+django_redis==5.4.0
